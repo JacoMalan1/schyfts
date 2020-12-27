@@ -1,0 +1,18 @@
+# IDE files
+.idea/
+
+# Gradle
+.gradle/
+build/
+out/
+
+# Don't ignore gradle wrapper
+!gradle/wrapper/gradle-wrapper.jar
+
+# Java Classes
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
