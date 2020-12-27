@@ -6,9 +6,6 @@
 build/
 out/
 
-# Don't ignore gradle wrapper
-!gradle/wrapper/gradle-wrapper.jar
-
 # Java Classes
 *.class
 
@@ -16,3 +13,5 @@ out/
 *.jar
 *.war
 *.ear
+
+!gradle/wrapper/gradle-wrapper.jar
