@@ -9,6 +9,12 @@ out/
 # Java Classes
 *.class
 
+# Logs
+logs/
+
+# Config files
+config.json
+
 # Package files
 *.jar
 *.war

@@ -26,7 +26,7 @@ public class Menu implements Initializable {
     private Label lblUsername;
 
     public void btnRosterClick(ActionEvent actionEvent) {
-
+        Schyfts.changeScene("roster.fxml", "Roster");
     }
 
     public void btnLeaveCalendarClick(ActionEvent actionEvent) {
@@ -43,5 +43,13 @@ public class Menu implements Initializable {
             indLoggedIn.fillProperty().set(Paint.valueOf("LIME"));
             lblUsername.setText(UserContext.getInstance().getCurrentUser().getUsername());
         }
+    }
+
+    public void btnDoctorInformationClick(ActionEvent actionEvent) {
+
+        if (UserContext.getInstance().getCurrentUser() != null) {
+            Schyfts.changeScene("doctors.fxml", "Doctors");
+        }
+
     }
 }

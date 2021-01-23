@@ -1,12 +1,11 @@
 package com.codelog.schyfts;
 
+import com.codelog.schyfts.logging.Logger;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import jfxtras.styles.jmetro.JMetro;
-import jfxtras.styles.jmetro.Style;
 
 import java.io.IOException;
 import java.net.URL;
@@ -18,11 +17,11 @@ public class Schyfts extends Application {
     }
 
     private static Stage currentStage;
-    private static JMetro jMetro;
 
     @Override
     public void start(Stage primaryStage) throws IOException {
 
+        Logger.getInstance().info("Building GUI...");
         var file = getClass().getClassLoader().getResource("login.fxml");
         if (file == null)
             return;
@@ -30,9 +29,6 @@ public class Schyfts extends Application {
         Parent root = FXMLLoader.load(file);
 
         Scene scene = new Scene(root);
-        jMetro = new JMetro(Style.DARK);
-        jMetro.setScene(scene);
-        jMetro.setAutomaticallyColorPanes(true);
 
         primaryStage.setTitle("Login");
         primaryStage.setScene(scene);
@@ -40,6 +36,7 @@ public class Schyfts extends Application {
         primaryStage.show();
 
         currentStage = primaryStage;
+        Logger.getInstance().info("Done");
 
     }
 
@@ -52,9 +49,14 @@ public class Schyfts extends Application {
             Parent root = FXMLLoader.load(file);
             Scene scene = new Scene(root);
             currentStage.setScene(scene);
-            jMetro.setScene(scene);
         } catch (IOException e) {
             e.printStackTrace(System.err);
         }
     }
+
+    public static void changeScene(String resource, String title) {
+        currentStage.setTitle(title);
+        changeScene(resource);
+    }
+
 }

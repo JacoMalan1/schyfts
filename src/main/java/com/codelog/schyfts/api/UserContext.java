@@ -29,4 +29,9 @@ public class UserContext {
     public void removeUser(User user) { users.remove(user); }
 
     public User getCurrentUser() { return currentUser; }
+
+    public static void destroy() {
+        instance = null;
+    }
+
 }

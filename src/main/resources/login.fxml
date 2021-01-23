@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="295.0" prefWidth="464.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codelog.schyfts.LoginController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="295.0" prefWidth="464.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codelog.schyfts.Login">
    <children>
       <TextField fx:id="txtUname" layoutX="147.0" layoutY="93.0" promptText="username" />
       <PasswordField fx:id="pwdPass" layoutX="147.0" layoutY="132.0" promptText="password" />

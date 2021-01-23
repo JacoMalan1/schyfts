@@ -1,0 +1,11 @@
+{
+  "logging": {
+    "log_level": 0,
+    "log_level_names": [
+      "Debug",
+      "Info",
+      "Warn",
+      "Error"
+    ]
+  }
+}

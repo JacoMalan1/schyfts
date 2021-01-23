@@ -16,6 +16,8 @@ public class User {
 
     private boolean loggedIn;
 
+    public String getToken() { return token; }
+
     public User(String username) {
         this.username = username;
         this.loggedIn = false;
