@@ -1,8 +1,8 @@
 package com.codelog.schyfts;
 
 import com.codelog.schyfts.api.Doctor;
-import com.codelog.schyfts.api.User;
 import com.codelog.schyfts.api.UserContext;
+import com.codelog.schyfts.logging.Logger;
 import com.codelog.schyfts.util.Request;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -16,6 +16,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Doctors implements Initializable {
 
@@ -31,20 +32,32 @@ public class Doctors implements Initializable {
     private TextField txtSurname;
     @FXML
     private Button btnSubmit;
+    @FXML
+    private ProgressBar prgStatus;
 
     private static List<Doctor> doctors;
     private boolean submitAction; // true: Add new doctor, false: Edit doctor
+    private AtomicBoolean refreshing;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+        refreshing = new AtomicBoolean();
+        refreshing.set(false);
+
         doctors = new ArrayList<>();
         submitAction = false;
-        refreshDoctors();
+
+        Thread t = new Thread(this::refreshDoctors);
+        t.start();
 
     }
 
+    @SuppressWarnings("unchecked")
     public void refreshDoctors() {
+        refreshing.set(true);
+
+        prgStatus.setProgress(0);
         txtShortcode.clear();
         txtCellphone.clear();
         txtName.clear();
@@ -53,17 +66,19 @@ public class Doctors implements Initializable {
         TableColumn<Doctor, Integer> clmId = new TableColumn<>("ID");
         clmId.setCellValueFactory(new PropertyValueFactory<>("id"));
 
-        TableColumn<Doctor, Integer> clmShortcode = new TableColumn<>("Shortcode");
+        TableColumn<Doctor, String> clmShortcode = new TableColumn<>("Shortcode");
         clmShortcode.setCellValueFactory(new PropertyValueFactory<>("shortcode"));
 
-        TableColumn<Doctor, Integer> clmCellphone = new TableColumn<>("Cellphone");
+        TableColumn<Doctor, String> clmCellphone = new TableColumn<>("Cellphone");
         clmCellphone.setCellValueFactory(new PropertyValueFactory<>("cellphone"));
 
-        TableColumn<Doctor, Integer> clmName = new TableColumn<>("Initials");
+        TableColumn<Doctor, String> clmName = new TableColumn<>("Initials");
         clmName.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-        TableColumn<Doctor, Integer> clmSurname = new TableColumn<>("Surname");
+        TableColumn<Doctor, String> clmSurname = new TableColumn<>("Surname");
         clmSurname.setCellValueFactory(new PropertyValueFactory<>("surname"));
+
+        prgStatus.setProgress(0.5);
 
         tblDoctors.getColumns().clear();
         tblDoctors.getColumns().add(clmId);
@@ -85,9 +100,17 @@ public class Doctors implements Initializable {
                 txtSurname.setText(newSelection.getSurname());
             }
         });
+
+        prgStatus.setProgress(1);
+
+        tblDoctors.getSortOrder().addAll(clmSurname, clmName);
+        refreshing.set(false);
     }
 
     public void btnAddDoctorClick(ActionEvent actionEvent) {
+
+        if (refreshing.get())
+            return;
 
         submitAction = true;
         tblDoctors.getSelectionModel().clearSelection();
@@ -103,8 +126,16 @@ public class Doctors implements Initializable {
 
     public void btnSubmitClick(ActionEvent actionEvent) {
 
+        if (refreshing.get())
+            return;
+
         var body = new JSONObject();
+
         if (!submitAction) {
+
+            if (tblDoctors.getSelectionModel().getSelectedItem() == null)
+                return;
+
             var edit = new JSONObject();
 
             edit.put("shortcode", txtShortcode.getText());
@@ -129,7 +160,7 @@ public class Doctors implements Initializable {
                 System.out.print(req.getResponse().toString(4));
                 alert = new Alert(Alert.AlertType.INFORMATION, "Record updated");
             } catch (IOException e) {
-                e.printStackTrace(System.err);
+                Logger.getInstance().exception(e);
                 alert = new Alert(Alert.AlertType.ERROR, String.format("Error: [%s]", e.getLocalizedMessage()));
             }
 
@@ -160,7 +191,7 @@ public class Doctors implements Initializable {
                 btnSubmit.setText("Submit");
                 refreshDoctors();
             } catch (IOException e) {
-                e.printStackTrace(System.err);
+                Logger.getInstance().exception(e);
                 Alert alert = new Alert(Alert.AlertType.ERROR, String.format("Error: %s", e.getLocalizedMessage()));
                 alert.setTitle("Error");
                 alert.show();

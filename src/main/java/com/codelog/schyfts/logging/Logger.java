@@ -28,6 +28,14 @@ public class Logger {
     public void setLogLevel(int logLevel) { this.logLevel = logLevel; }
     public int getLogLevel() { return logLevel; }
 
+    public void exception(Exception e) {
+
+        StringWriter writer = new StringWriter();
+        e.printStackTrace(new PrintWriter(writer));
+        error(writer.toString());
+
+    }
+
     public void writeToFile(String logName) throws IOException {
 
         SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");

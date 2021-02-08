@@ -1,6 +1,7 @@
 package com.codelog.schyfts.api;
 
 import com.codelog.schyfts.Reference;
+import com.codelog.schyfts.logging.Logger;
 import com.codelog.schyfts.util.Request;
 import jdk.jfr.Unsigned;
 import org.json.JSONObject;
@@ -45,7 +46,7 @@ public class User {
                 return true;
             }
         } catch (IOException e) {
-            e.printStackTrace(System.err);
+            Logger.getInstance().exception(e);
             return false;
         }
         return false;

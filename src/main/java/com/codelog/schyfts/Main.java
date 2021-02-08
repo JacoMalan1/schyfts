@@ -20,7 +20,7 @@ public class Main {
             else
                 config = FileUtils.readJSONResource("defaults.json");
         } catch (IOException e) {
-            Logger.getInstance().error(e.getLocalizedMessage());
+            Logger.getInstance().exception(e);
             System.exit(-1);
         }
 
@@ -48,14 +48,14 @@ public class Main {
         try {
             Schyfts.main(args);
         } catch (Exception e) {
-            Logger.getInstance().error(e.getLocalizedMessage());
+            Logger.getInstance().exception(e);
         }
 
         try {
             FileUtils.writeFile("config.json", config.toString(2));
             Logger.getInstance().writeToFile("schyfts");
         } catch (IOException e) {
-            Logger.getInstance().error(e.getLocalizedMessage());
+            Logger.getInstance().exception(e);
         }
     }
 }

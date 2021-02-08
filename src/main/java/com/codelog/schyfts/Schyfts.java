@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -50,8 +51,40 @@ public class Schyfts extends Application {
             Scene scene = new Scene(root);
             currentStage.setScene(scene);
         } catch (IOException e) {
-            e.printStackTrace(System.err);
+            Logger.getInstance().exception(e);
         }
+    }
+
+    public static Stage createStage(String resource, String title) {
+
+        var file = Schyfts.class.getClassLoader().getResource(resource);
+        if (file == null) {
+            Logger.getInstance().error(String.format("Couldn't load resource (%s)", resource));
+            return null;
+        }
+
+        Parent root = null;
+        try {
+            root = FXMLLoader.load(file);
+        } catch(IOException e) {
+            Logger.getInstance().exception(e);
+        }
+
+        if (root == null) {
+            Logger.getInstance().error(String.format("Couldn't load stage (%s)", resource));
+            return null;
+        }
+
+        Scene scene = new Scene(root);
+        Stage stage = new Stage();
+        stage.setTitle(title);
+        stage.setScene(scene);
+        stage.initOwner(currentStage);
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.show();
+
+        return stage;
+
     }
 
     public static void changeScene(String resource, String title) {

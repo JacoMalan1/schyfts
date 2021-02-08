@@ -26,11 +26,13 @@ public class Menu implements Initializable {
     private Label lblUsername;
 
     public void btnRosterClick(ActionEvent actionEvent) {
-        Schyfts.changeScene("roster.fxml", "Roster");
+        Roster.primaryStage = Schyfts.createStage("roster.fxml", "Roster");
     }
 
     public void btnLeaveCalendarClick(ActionEvent actionEvent) {
-
+        if (UserContext.getInstance().getCurrentUser() != null) {
+            Schyfts.createStage("leave.fxml", "Leave");
+        }
     }
 
     public void btnPatientReportsClick(ActionEvent actionEvent) {
@@ -39,6 +41,7 @@ public class Menu implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        btnPatientReports.setDisable(true);
         if (UserContext.getInstance().getCurrentUser() != null) {
             indLoggedIn.fillProperty().set(Paint.valueOf("LIME"));
             lblUsername.setText(UserContext.getInstance().getCurrentUser().getUsername());
@@ -48,7 +51,7 @@ public class Menu implements Initializable {
     public void btnDoctorInformationClick(ActionEvent actionEvent) {
 
         if (UserContext.getInstance().getCurrentUser() != null) {
-            Schyfts.changeScene("doctors.fxml", "Doctors");
+            Schyfts.createStage("doctors.fxml", "Doctors");
         }
 
     }
