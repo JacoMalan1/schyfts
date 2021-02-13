@@ -4,14 +4,10 @@ import com.codelog.schyfts.api.Doctor;
 import com.codelog.schyfts.api.UserContext;
 import com.codelog.schyfts.logging.Logger;
 import com.codelog.schyfts.util.Request;
-import com.google.api.Page;
-import com.google.api.services.storage.Storage;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.StorageOptions;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -64,7 +60,8 @@ public class Roster implements Initializable {
         var matrixBlob = storageBucket.get("matrix.csv");
         if (matrixBlob != null) {
             try {
-                Files.delete(Path.of("matrix.csv"));
+                if (Files.exists(Path.of("matrix.csv")))
+                    Files.delete(Path.of("matrix.csv"));
                 matrixBlob.downloadTo(Path.of("matrix.csv"));
             } catch (IOException e) {
                 Logger.getInstance().exception(e);
