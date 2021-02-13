@@ -1,15 +1,19 @@
 package com.codelog.schyfts;
 
 import com.codelog.schyfts.api.UserContext;
+import com.codelog.schyfts.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class Menu implements Initializable {
@@ -24,6 +28,8 @@ public class Menu implements Initializable {
     private Button btnPatientReports;
     @FXML
     private Label lblUsername;
+    @FXML
+    private ImageView imgLogo;
 
     public void btnRosterClick(ActionEvent actionEvent) {
         Roster.primaryStage = Schyfts.createStage("roster.fxml", "Roster");
@@ -41,10 +47,22 @@ public class Menu implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
+        try {
+            Image img = new Image(Objects.requireNonNull(
+                    getClass().getClassLoader().getResourceAsStream("nelanest.png")
+            ));
+            imgLogo.setImage(img);
+        } catch (NullPointerException e) {
+            Logger.getInstance().exception(e);
+            Logger.getInstance().error("Couldn't load logo");
+        }
+
         btnPatientReports.setDisable(true);
         if (UserContext.getInstance().getCurrentUser() != null) {
             indLoggedIn.fillProperty().set(Paint.valueOf("LIME"));
-            lblUsername.setText(UserContext.getInstance().getCurrentUser().getUsername());
+            var currentUser = UserContext.getInstance().getCurrentUser();
+            lblUsername.setText(String.format("%s (%d)", currentUser.getUsername(), currentUser.getPermissionLevel()));
         }
     }
 

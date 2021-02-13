@@ -13,7 +13,7 @@ public class User {
     private String id;
     private String email;
     private String token;
-    private @Unsigned int permissionLevel;
+    private int permissionLevel;
 
     private boolean loggedIn;
 
@@ -25,6 +25,8 @@ public class User {
     }
 
     public boolean isLoggedIn() { return loggedIn; }
+
+    public int getPermissionLevel() { return permissionLevel; }
 
     public String getUsername() { return username; }
 
@@ -41,6 +43,7 @@ public class User {
 
             if (req.getResponse().get("status").equals("ok")) {
                 token = req.getResponse().getString("token");
+                permissionLevel = req.getResponse().getInt("permissionLevel");
                 this.loggedIn = true;
                 UserContext.getInstance().addUser(this);
                 return true;

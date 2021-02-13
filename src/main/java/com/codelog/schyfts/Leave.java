@@ -162,6 +162,46 @@ public class Leave implements Initializable {
     }
 
     public void mnuDelete(ActionEvent actionEvent) {
+
+        if (tblLeave.getSelectionModel().getSelectedItem() == null)
+            return;
+
+        LeaveData leaveData = tblLeave.getSelectionModel().getSelectedItem();
+        boolean success = false;
+        Exception exception = new Exception();
+
+        try {
+            Request req = new Request(Reference.API_URL + "deleteLeave");
+            var startDate = leaveData.getStartDate();
+            String startDateStr = String.format("%04d-%02d-%02d",
+                    startDate.getYear(),
+                    startDate.getMonthValue(),
+                    startDate.getDayOfMonth()
+            );
+            var body = new JSONObject();
+            body.put("token", UserContext.getInstance().getCurrentUser().getToken());
+            body.put("dID", leaveData.getDoctorId());
+            body.put("startDate", startDateStr);
+            req.setBody(body);
+            req.sendRequest();
+            if (!req.getResponse().getString("status").equals("ok"))
+                throw new IOException(req.getResponse().getString("message"));
+            success = true;
+        } catch (IOException e) {
+            Logger.getInstance().exception(e);
+            exception = e;
+        }
+
+        Alert alert;
+        if (success)
+            alert = new Alert(Alert.AlertType.INFORMATION, "Leave deleted");
+        else
+            alert = new Alert(Alert.AlertType.ERROR, "Error: " + exception.getLocalizedMessage());
+
+        alert.setTitle(success ? "Done" : "Error");
+        alert.show();
+        refresh();
+
     }
 
     public void btnSubmitClick(ActionEvent actionEvent) {

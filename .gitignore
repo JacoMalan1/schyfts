@@ -23,4 +23,7 @@ config.json
 # Generated files
 *.csv
 
+# Credentials
+service-account.json
+
 !gradle/wrapper/gradle-wrapper.jar
