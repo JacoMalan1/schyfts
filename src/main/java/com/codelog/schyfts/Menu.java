@@ -73,4 +73,11 @@ public class Menu implements Initializable {
         }
 
     }
+
+    public void btnUserManagementClick(ActionEvent actionEvent) {
+
+        if (UserContext.getInstance().getCurrentUser() != null)
+            Schyfts.createStage("users.fxml", "User Management");
+
+    }
 }

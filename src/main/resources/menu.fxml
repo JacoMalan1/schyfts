@@ -58,6 +58,14 @@
                   <Insets top="5.0" />
                </VBox.margin>
             </Button>
+            <Button fx:id="btnUserManagement" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnUserManagementClick" prefHeight="60.0" text="User Management">
+               <font>
+                  <Font size="26.0" />
+               </font>
+               <VBox.margin>
+                  <Insets top="5.0" />
+               </VBox.margin>
+            </Button>
          </children>
       </VBox>
       <Label fx:id="lblUsername" text="Logged Out" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />

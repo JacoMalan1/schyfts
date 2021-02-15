@@ -13,9 +13,15 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.json.JSONObject;
 
@@ -32,7 +38,10 @@ import static javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactor
 public class Roster implements Initializable {
 
     private static int MODULES = 16;
-    private static int LISTS = 10;
+    private static int LISTS = 14;
+    private static int CALLS = 3;
+    private static int LOCI = 4;
+    private static int STATIC_COLUMNS = 1;
     private String[][] matrix;
     private static List<String> lists;
     public static Stage primaryStage;
@@ -40,6 +49,7 @@ public class Roster implements Initializable {
     private static int STATIC_MODULES = 3;
     private Map<Integer, List<Integer>> moduleMap;
     private Map<Integer, String> doctorNames;
+    private List<String> keys;
     private Bucket storageBucket;
     private Map<Integer, Integer> sharedModules;
     private int scheduleOffset;
@@ -105,7 +115,7 @@ public class Roster implements Initializable {
 
         var doctors = Doctor.getAllDoctors();
         for (var d : doctors)
-            doctorNames.put(d.getId(), String.format("%s, %s", d.getSurname(), d.getName()));
+            doctorNames.put(d.getId(), String.format("%s %s", d.getSurname(), d.getName()));
 
     }
 
@@ -174,6 +184,10 @@ public class Roster implements Initializable {
         lists.add("Thu PM");
         lists.add("Fri AM");
         lists.add("Fri PM");
+        lists.add("Sat AM");
+        lists.add("Sat PM");
+        lists.add("Sun AM");
+        lists.add("Sun PM");
 
         TableColumn<Map, String> clmLabel = new TableColumn<>("List");
         clmLabel.setCellValueFactory(new MapValueFactory<>("list"));
@@ -312,17 +326,21 @@ public class Roster implements Initializable {
 
     public void mnuGenerateSchedule(ActionEvent actionEvent) {
 
+        keys = new ArrayList<>();
         tabSchedule.setDisable(false);
         tabSchedule.getTabPane().getSelectionModel().select(tabSchedule);
         tblSchedule.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         tblSchedule.getItems().clear();
         tblSchedule.getColumns().clear();
         tblSchedule.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+        tblSchedule.setEditable(true);
 
         constructModuleMap();
 
         TableColumn<Map, String> clmList = new TableColumn<>("List");
         clmList.setCellValueFactory(new MapValueFactory<>("List"));
+        tblSchedule.getColumns().add(clmList);
+        keys.add("List");
 
         for (var module : moduleMap.keySet()) {
 
@@ -331,11 +349,41 @@ public class Roster implements Initializable {
             for (var doctor : moduleMap.get(module)) {
                 TableColumn<Map, String> clmDoctor = new TableColumn<>(doctorNames.get(doctor));
                 clmDoctor.setCellValueFactory(new MapValueFactory<>(doctorNames.get(doctor)));
+                keys.add(doctorNames.get(doctor));
+                clmDoctor.setEditable(true);
+                clmDoctor.setCellFactory(TextFieldTableCell.forTableColumn());
                 clm.getColumns().add(clmDoctor);
             }
 
             tblSchedule.getColumns().add(clm);
 
+        }
+
+        TableColumn<Map, String> clmStatic = new TableColumn<>("Static");
+        TableColumn<Map, String> joubert = new TableColumn<>("Joubert L");
+        keys.add("Joubert L");
+        joubert.setCellFactory(TextFieldTableCell.forTableColumn());
+        joubert.setCellValueFactory(new MapValueFactory<>("static"));
+        joubert.setEditable(true);
+        clmStatic.getColumns().add(joubert);
+        tblSchedule.getColumns().add(clmStatic);
+
+        for (int i = 0; i < CALLS; i++) {
+            TableColumn<Map, String> clmCall = new TableColumn<>(String.format("Call %d", i + 1));
+            clmCall.setEditable(true);
+            clmCall.setCellFactory(TextFieldTableCell.forTableColumn());
+            clmCall.setCellValueFactory(new MapValueFactory<>(String.format("call%d", i + 1)));
+            keys.add(String.format("call%d", i + 1));
+            tblSchedule.getColumns().add(clmCall);
+        }
+
+        for (int i = 0; i < LOCI; i++) {
+            TableColumn<Map, String> clm = new TableColumn<>(String.format("Locum %d", i + 1));
+            clm.setEditable(true);
+            clm.setCellValueFactory(new MapValueFactory<>(String.format("locum%d", i + 1)));
+            keys.add(String.format("locum%d", i + 1));
+            clm.setCellFactory(TextFieldTableCell.forTableColumn());
+            tblSchedule.getColumns().add(clm);
         }
 
         ObservableList<Map<String, String>> items = FXCollections.observableArrayList();
@@ -351,5 +399,67 @@ public class Roster implements Initializable {
 
         tblSchedule.getItems().addAll(items);
 
+    }
+
+    @SuppressWarnings("unchecked")
+    public void mnuSaveSchedule(ActionEvent actionEvent) {
+
+        FileChooser chooser = new FileChooser();
+        FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
+        chooser.getExtensionFilters().add(filter);
+
+        VBox vbox = new VBox(new Text("Save"));
+        vbox.setAlignment(Pos.CENTER);
+        Scene scene = new Scene(vbox);
+        Stage stage = new Stage();
+        stage.initOwner(Schyfts.currentStage);
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.setTitle("Save as");
+        stage.setScene(scene);
+
+        File file = chooser.showSaveDialog(stage);
+        List<String> lines = new ArrayList<>();
+
+
+        for (Map<String, String> item : tblSchedule.getItems()) {
+
+            StringBuilder builder = new StringBuilder();
+            for (var key : keys) {
+                builder.append(item.get(key)).append(',');
+            }
+            builder.deleteCharAt(builder.length() - 1);
+            lines.add(builder.toString());
+
+        }
+
+        StringBuilder builder = new StringBuilder();
+        StringBuilder builder2 = new StringBuilder();
+        for (var clm : tblSchedule.getColumns()) {
+            builder.append(clm.getText()).append(',');
+            builder.append(",".repeat(Math.max(0, clm.getColumns().size() - 1)));
+            for (int i = 0; i < clm.getColumns().size(); i++) {
+                builder2.append(clm.getColumns().get(i).getText()).append(',');
+            }
+            if (clm.getColumns().size() == 0)
+                builder2.append(',');
+        }
+
+        builder.deleteCharAt(builder.length() - 1);
+        builder2.deleteCharAt(builder.length() - 1);
+        lines.add(0, builder.toString());
+        lines.add(1, builder2.toString());
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+            for (var line : lines) {
+                line = line.replace("null", "");
+                writer.write(line);
+                writer.flush();
+                writer.newLine();
+            }
+            writer.close();
+        } catch (IOException e) {
+            Logger.getInstance().exception(e);
+        }
     }
 }

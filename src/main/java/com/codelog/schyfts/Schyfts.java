@@ -17,7 +17,7 @@ public class Schyfts extends Application {
         launch(args);
     }
 
-    private static Stage currentStage;
+    public static Stage currentStage;
 
     @Override
     public void start(Stage primaryStage) throws IOException {

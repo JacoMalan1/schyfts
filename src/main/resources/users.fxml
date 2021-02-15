@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="254.0" prefWidth="438.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codelog.schyfts.Users">
+   <top>
+      <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
+         <children>
+            <MenuBar>
+              <menus>
+                <Menu mnemonicParsing="false" text="File">
+                  <items>
+                    <MenuItem fx:id="mnuAddUser" mnemonicParsing="false" onAction="#mnuAddUserClick" text="Add User" />
+                  </items>
+                </Menu>
+                  <Menu mnemonicParsing="false" text="User">
+                    <items>
+                      <MenuItem fx:id="mnuChangePassword" mnemonicParsing="false" onAction="#mnuChangePasswordClick" text="Change Password" />
+                    </items>
+                  </Menu>
+              </menus>
+            </MenuBar>
+            <ChoiceBox fx:id="cmbUser" prefWidth="150.0" />
+         </children>
+      </VBox>
+   </top>
+   <center>
+      <HBox alignment="CENTER" prefHeight="112.0" prefWidth="380.0" BorderPane.alignment="CENTER">
+         <children>
+            <VBox alignment="CENTER" prefHeight="323.0" prefWidth="142.0" spacing="18.0" HBox.hgrow="NEVER">
+               <children>
+                  <Label text="Username" />
+                  <Label text="Email" />
+                  <Label text="Permissions" textAlignment="CENTER" />
+               </children>
+               <padding>
+                  <Insets bottom="5.0" left="20.0" />
+               </padding>
+            </VBox>
+            <VBox alignment="CENTER" fillWidth="false" prefHeight="323.0" spacing="10.0" HBox.hgrow="NEVER">
+               <children>
+                  <TextField fx:id="txtUsername" />
+                  <TextField fx:id="txtEmail" />
+                  <Spinner fx:id="spnPerms" />
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </center>
+   <right>
+      <VBox alignment="CENTER" prefHeight="323.0" prefWidth="140.0" BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#btnSubmitClick" text="Submit" />
+         </children>
+      </VBox>
+   </right>
+</BorderPane>

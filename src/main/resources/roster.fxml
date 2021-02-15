@@ -54,7 +54,7 @@
                           <menus>
                             <Menu mnemonicParsing="false" text="File">
                               <items>
-                                <MenuItem fx:id="mnuSaveSchedule" mnemonicParsing="false" text="Save As">
+                                <MenuItem fx:id="mnuSaveSchedule" onAction="#mnuSaveSchedule" mnemonicParsing="false" text="Save As">
                                        <accelerator>
                                           <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                                        </accelerator>
