@@ -1,5 +1,7 @@
 package com.codelog.schyfts;
 
+import com.codelog.schyfts.api.APIException;
+import com.codelog.schyfts.api.APIRequest;
 import com.codelog.schyfts.api.Doctor;
 import com.codelog.schyfts.api.UserContext;
 import com.codelog.schyfts.logging.Logger;
@@ -13,23 +15,28 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 import org.json.JSONObject;
+import org.json.JSONStringer;
 
 import java.io.*;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.*;
 
 import static javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
@@ -62,8 +69,6 @@ public class Roster implements Initializable {
     private Tab tabMatrix;
     @FXML
     private Tab tabSchedule;
-    @FXML
-    private Spinner<Integer> spnOffset;
 
     public void loadRoster() {
 
@@ -114,6 +119,11 @@ public class Roster implements Initializable {
         doctorNames = new HashMap<>();
 
         var doctors = Doctor.getAllDoctors();
+        if (doctors == null) {
+            Logger.getInstance().error("Couldn't retrieve doctors");
+            return;
+        }
+
         for (var d : doctors)
             doctorNames.put(d.getId(), String.format("%s %s", d.getSurname(), d.getName()));
 
@@ -140,12 +150,6 @@ public class Roster implements Initializable {
         doctors = Doctor.getAllDoctors();
 
         scheduleOffset = 0;
-        spnOffset.setValueFactory(new IntegerSpinnerValueFactory(0, Integer.MAX_VALUE, 0));
-        spnOffset.setPromptText("Offset for schedule (in modules)");
-        spnOffset.valueProperty().addListener((observable, oldValue, newValue) -> {
-            scheduleOffset = newValue;
-            mnuGenerateSchedule(null);
-        });
 
         var stream = getClass().getClassLoader().getResourceAsStream("google/service-account.json");
         if (stream != null) {
@@ -300,7 +304,7 @@ public class Roster implements Initializable {
 
     public void constructModuleMap() {
         moduleMap = new HashMap<>();
-        int currentModule = spnOffset.getValue() % MODULES;
+        int currentModule = scheduleOffset % MODULES;
         doctors.sort(Comparator.comparing(Doctor::getSurname));
         for (Doctor d : doctors) {
             if (!sharedModules.containsKey(d.getId())) {
@@ -326,6 +330,49 @@ public class Roster implements Initializable {
 
     public void mnuGenerateSchedule(ActionEvent actionEvent) {
 
+        tblSchedule.getStylesheets().add("styles.css");
+        Dialog<Pair<LocalDate, LocalDate>> dialog = new Dialog<>();
+        dialog.setTitle("Schedule options");
+        dialog.setHeaderText("Please select a start and end date");
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        GridPane pane = new GridPane();
+        pane.setHgap(10);
+        pane.setVgap(10);
+        pane.setPadding(new Insets(20, 150, 10, 10));
+
+        DatePicker dpStartDate = new DatePicker();
+        DatePicker dpEndDate = new DatePicker();
+
+        pane.add(new Label("Start Date:"), 0, 0);
+        pane.add(dpStartDate, 1, 0);
+        pane.add(new Label("End Date:"), 0, 1);
+        pane.add(dpEndDate, 1, 1);
+
+        dialog.getDialogPane().setContent(pane);
+        dialog.setResultConverter(dialogButton -> {
+            if (!dialogButton.getButtonData().isCancelButton()) {
+                return new Pair<>(dpStartDate.getValue(), dpEndDate.getValue());
+            }
+            return null;
+        });
+
+        Optional<Pair<LocalDate, LocalDate>> result = dialog.showAndWait();
+        if (result.isEmpty())
+            return;
+
+        try {
+            APIRequest getSettingRequest = new APIRequest("getSetting", true, "key");
+            var response = getSettingRequest.send("scheduleOffset");
+            Logger.getInstance().debug(String.format(
+                    "Got setting scheduleOffset: %s",
+                    response.getJSONObject("result").getString("value"))
+            );
+            Logger.getInstance().debug(response.toString(4));
+            scheduleOffset = Integer.parseInt(response.getJSONObject("result").getString("value"));
+        } catch (IOException | IllegalArgumentException | APIException e) {
+            Logger.getInstance().exception(e);
+        }
+
         keys = new ArrayList<>();
         tabSchedule.setDisable(false);
         tabSchedule.getTabPane().getSelectionModel().select(tabSchedule);
@@ -334,6 +381,7 @@ public class Roster implements Initializable {
         tblSchedule.getColumns().clear();
         tblSchedule.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         tblSchedule.setEditable(true);
+
 
         constructModuleMap();
 
@@ -461,5 +509,15 @@ public class Roster implements Initializable {
         } catch (IOException e) {
             Logger.getInstance().exception(e);
         }
+    }
+
+    public void btnPrevClick(ActionEvent actionEvent) {
+        if (tabSchedule.isDisabled())
+            return;
+    }
+
+    public void btnNextClick(ActionEvent actionEvent) {
+        if (tabSchedule.isDisabled())
+            return;
     }
 }

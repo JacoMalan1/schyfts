@@ -28,6 +28,7 @@ public class Schyfts extends Application {
             return;
 
         Parent root = FXMLLoader.load(file);
+        root.getStylesheets().add("styles.css");
 
         Scene scene = new Scene(root);
 

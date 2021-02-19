@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableView?>
@@ -54,7 +54,7 @@
                           <menus>
                             <Menu mnemonicParsing="false" text="File">
                               <items>
-                                <MenuItem fx:id="mnuSaveSchedule" onAction="#mnuSaveSchedule" mnemonicParsing="false" text="Save As">
+                                <MenuItem fx:id="mnuSaveSchedule" mnemonicParsing="false" onAction="#mnuSaveSchedule" text="Save As">
                                        <accelerator>
                                           <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                                        </accelerator>
@@ -63,7 +63,8 @@
                             </Menu>
                           </menus>
                         </MenuBar>
-                        <Spinner fx:id="spnOffset" />
+                        <Button fx:id="btnPrev" onAction="#btnPrevClick" mnemonicParsing="false" text="Previous week" />
+                        <Button fx:id="btnNext" onAction="#btnNextClick" mnemonicParsing="false" text="Next Week" />
                      </children>
                   </HBox>
                </top>
