@@ -1,9 +1,6 @@
 package com.codelog.schyfts.api;
 
-import com.codelog.schyfts.Reference;
 import com.codelog.schyfts.logging.Logger;
-import com.codelog.schyfts.util.Request;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,23 +36,17 @@ public class User {
 
     public boolean login(String password) {
         try {
-            Request req = new Request(Reference.API_URL + "login");
+            APIRequest req = new APIRequest("login", false, "uname", "pword");
+            var response = req.send(username, password);
 
-            var body = new JSONObject();
-            body.put("uname", username);
-            body.put("pword", password);
-
-            req.setBody(body);
-            req.sendRequest();
-
-            if (req.getResponse().get("status").equals("ok")) {
-                token = req.getResponse().getString("token");
-                permissionLevel = req.getResponse().getInt("permissionLevel");
+            if (response.get("status").equals("ok")) {
+                token = response.getString("token");
+                permissionLevel = response.getInt("permissionLevel");
                 this.loggedIn = true;
                 UserContext.getInstance().addUser(this);
                 return true;
             }
-        } catch (IOException e) {
+        } catch (IOException | APIException e) {
             Logger.getInstance().exception(e);
             return false;
         }
@@ -63,11 +54,12 @@ public class User {
     }
 
     public void register(String password, String email) {
-
-    }
-
-    public void changePassword(String currentPass, String newPass) {
-
+        try {
+            APIRequest req = new APIRequest("register", false, "uname", "pword", "email");
+            req.send(username, password, email);
+        } catch (IOException | APIException e) {
+            Logger.getInstance().exception(e);
+        }
     }
 
     public String getId() {
@@ -90,16 +82,13 @@ public class User {
         var results = new ArrayList<User>();
 
         try {
-            Request req = new Request(Reference.API_URL + "getAllUsers");
-            var body = new JSONObject();
-            body.put("token", UserContext.getInstance().getCurrentUser().getToken());
-            req.setBody(body);
-            req.sendRequest();
+            APIRequest req = new APIRequest("getAllUsers", true);
+            var response = req.send();
 
-            if (!req.getResponse().getString("status").equals("ok"))
-                throw new IOException(req.getResponse().getString("message"));
+            if (!response.getString("status").equals("ok"))
+                throw new IOException(response.getString("message"));
 
-            var jsonResults = req.getResponse().getJSONArray("results");
+            var jsonResults = response.getJSONArray("results");
             for (int i = 0; i < jsonResults.length(); i++) {
 
                 var user = jsonResults.getJSONObject(i);
@@ -112,7 +101,7 @@ public class User {
 
             }
 
-        } catch (IOException e) {
+        } catch (IOException | APIException e) {
             Logger.getInstance().exception(e);
         }
 

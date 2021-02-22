@@ -13,7 +13,13 @@ public class APIRequest {
     private String[] params;
     private boolean authenticate;
 
-    public APIRequest(String method, boolean authenticate, String... params) throws IOException {
+    /**
+     * Constructs a new API Request.
+     * @param method The name of the method to call. E.g. https://your-api.com/&lt;yourmethod&gt;
+     * @param authenticate Whether or not to send the current user's authentication token.
+     * @param params All of the parameters the API expects for the current method.
+     */
+    public APIRequest(String method, boolean authenticate, String... params) {
 
         this.method = method;
         this.params = params;
@@ -21,6 +27,14 @@ public class APIRequest {
 
     }
 
+    /**
+     * Sends the constructed API Request.
+     * @param values Values for the parameters specified in constructor
+     * @return Returns a JSONObject representing the HTTP response from the API server.
+     * @throws IllegalArgumentException Will throw IllegalArgumentException if the parameters don't match the values given.
+     * @throws IOException Will throw an IOException if the HTTP Request throws.
+     * @throws APIException Will throw an APIException if the API responds with an error code.
+     */
     public JSONObject send(Object... values) throws IllegalArgumentException, IOException, APIException {
 
         if (params.length != values.length)
@@ -39,6 +53,8 @@ public class APIRequest {
 
         if (!response.getString("status").equals("ok"))
             throw new APIException(response.getString("message"), response);
+
+        assert req.getResponseCode() == 200;
 
         return response;
 

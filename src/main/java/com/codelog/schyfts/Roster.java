@@ -1,9 +1,6 @@
 package com.codelog.schyfts;
 
-import com.codelog.schyfts.api.APIException;
-import com.codelog.schyfts.api.APIRequest;
-import com.codelog.schyfts.api.Doctor;
-import com.codelog.schyfts.api.UserContext;
+import com.codelog.schyfts.api.*;
 import com.codelog.schyfts.logging.Logger;
 import com.codelog.schyfts.util.Request;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -29,7 +26,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import org.json.JSONObject;
-import org.json.JSONStringer;
 
 import java.io.*;
 import java.net.URL;
@@ -38,8 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.*;
-
-import static javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 
 @SuppressWarnings({"rawtypes"})
 public class Roster implements Initializable {
@@ -57,6 +51,7 @@ public class Roster implements Initializable {
     private Map<Integer, List<Integer>> moduleMap;
     private Map<Integer, String> doctorNames;
     private List<String> keys;
+    private List<LeaveData> leave;
     private Bucket storageBucket;
     private Map<Integer, Integer> sharedModules;
     private int scheduleOffset;
@@ -71,7 +66,6 @@ public class Roster implements Initializable {
     private Tab tabSchedule;
 
     public void loadRoster() {
-
         var matrixBlob = storageBucket.get("matrix.csv");
         if (matrixBlob != null) {
             try {
@@ -101,7 +95,7 @@ public class Roster implements Initializable {
 
             String[] split = lines.get(i).split(",");
             for (int j = 0; j < split.length; j++) {
-                if (split[j].equals("\"\""))
+                if (split[j].equals("\"\"") || split[j].equals("null"))
                     matrix[j][i] = "";
                 else
                     matrix[j][i] = split[j];
@@ -110,11 +104,7 @@ public class Roster implements Initializable {
         }
     }
 
-    public void loadModules() {
-
-    }
-
-    public void getDoctorNames() {
+    public void refresh() {
 
         doctorNames = new HashMap<>();
 
@@ -126,6 +116,8 @@ public class Roster implements Initializable {
 
         for (var d : doctors)
             doctorNames.put(d.getId(), String.format("%s %s", d.getSurname(), d.getName()));
+
+        leave = LeaveData.getAllLeave();
 
     }
 
@@ -214,7 +206,7 @@ public class Roster implements Initializable {
         }
         updateItems();
 
-        Thread thread = new Thread(this::getDoctorNames);
+        Thread thread = new Thread(this::refresh);
         thread.start();
 
     }
@@ -280,23 +272,18 @@ public class Roster implements Initializable {
         Map<Integer, Integer> sharedModules = new HashMap<>();
 
         try {
+            APIRequest req = new APIRequest("getSharedModules", true);
+            var response = req.send();
 
-            Request req = new Request(Reference.API_URL + "getSharedModules");
-            var body = new JSONObject();
-            body.put("token", UserContext.getInstance().getCurrentUser().getToken());
-            req.setBody(body);
-            req.sendRequest();
+            if (!response.getString("status").equals("ok"))
+                throw new IOException(response.getString("message"));
 
-            if (!req.getResponse().getString("status").equals("ok"))
-                throw new IOException(req.getResponse().getString("message"));
-
-            var results = req.getResponse().getJSONArray("results");
+            var results = response.getJSONArray("results");
             for (int i = 0; i < results.length(); i++) {
                 for (String s : results.getJSONObject(i).getString("doctors").split(","))
                     sharedModules.put(Integer.parseInt(s), results.getJSONObject(i).getInt("moduleNum"));
             }
-
-        } catch (IOException e) {
+        } catch (IOException | APIException e) {
             Logger.getInstance().exception(e);
         }
         return sharedModules;
@@ -467,7 +454,6 @@ public class Roster implements Initializable {
 
         File file = chooser.showSaveDialog(stage);
         List<String> lines = new ArrayList<>();
-
 
         for (Map<String, String> item : tblSchedule.getItems()) {
 
