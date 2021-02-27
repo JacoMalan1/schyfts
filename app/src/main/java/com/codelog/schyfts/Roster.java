@@ -2,7 +2,6 @@ package com.codelog.schyfts;
 
 import com.codelog.schyfts.api.*;
 import com.codelog.schyfts.logging.Logger;
-import com.codelog.schyfts.util.Request;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
@@ -25,7 +24,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
-import org.json.JSONObject;
 
 import java.io.*;
 import java.net.URL;

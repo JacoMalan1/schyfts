@@ -1,2 +1,4 @@
 rootProject.name = 'schyfts'
 
+include('app')
+include('lib')

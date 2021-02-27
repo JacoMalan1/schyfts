@@ -1,0 +1,3 @@
+[submodule "clogg"]
+	path = clogg
+	url = git@github.com:Code-Log/clogg-java
