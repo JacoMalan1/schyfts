@@ -2,7 +2,7 @@ package com.codelog.schyfts;
 
 import com.codelog.schyfts.api.Doctor;
 import com.codelog.schyfts.api.UserContext;
-import com.codelog.schyfts.logging.Logger;
+import com.codelog.clogg.Logger;
 import com.codelog.schyfts.util.Request;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

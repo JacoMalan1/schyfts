@@ -1,6 +1,6 @@
 package com.codelog.schyfts;
 
-import com.codelog.schyfts.logging.Logger;
+import com.codelog.clogg.Logger;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -56,8 +56,7 @@ public class Schyfts extends Application {
         }
     }
 
-    public static Stage createStage(String resource, String title) {
-
+    public static Stage createStage(String resource, String title, boolean setModal) {
         var file = Schyfts.class.getClassLoader().getResource(resource);
         if (file == null) {
             Logger.getInstance().error(String.format("Couldn't load resource (%s)", resource));
@@ -81,11 +80,19 @@ public class Schyfts extends Application {
         stage.setTitle(title);
         stage.setScene(scene);
         stage.initOwner(currentStage);
-        stage.initModality(Modality.WINDOW_MODAL);
+
+        if (setModal)
+            stage.initModality(Modality.WINDOW_MODAL);
+        else
+            stage.initModality(Modality.NONE);
+
         stage.show();
 
         return stage;
+    }
 
+    public static Stage createStage(String resource, String title) {
+        return createStage(resource, title, true);
     }
 
     public static void changeScene(String resource, String title) {

@@ -42,6 +42,14 @@
                   <Font size="26.0" />
                </font>
             </Button>
+            <Button fx:id="btnSurgeonLeave" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnSurgeonLeaveClick" prefHeight="60.0" text="Surgeon Leave">
+               <font>
+                  <Font size="26.0" />
+               </font>
+               <VBox.margin>
+                  <Insets top="5.0" />
+               </VBox.margin>
+            </Button>
             <Button fx:id="btnPatientReports" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnPatientReportsClick" prefHeight="60.0" text="Patient Reports">
                <VBox.margin>
                   <Insets top="5.0" />

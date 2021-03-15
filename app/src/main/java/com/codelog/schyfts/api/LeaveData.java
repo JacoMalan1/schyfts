@@ -1,6 +1,6 @@
 package com.codelog.schyfts.api;
 
-import com.codelog.schyfts.logging.Logger;
+import com.codelog.clogg.Logger;
 import org.json.JSONObject;
 
 import java.io.IOException;

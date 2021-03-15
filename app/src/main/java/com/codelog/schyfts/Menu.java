@@ -1,7 +1,7 @@
 package com.codelog.schyfts;
 
 import com.codelog.schyfts.api.UserContext;
-import com.codelog.schyfts.logging.Logger;
+import com.codelog.clogg.Logger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -79,5 +79,10 @@ public class Menu implements Initializable {
         if (UserContext.getInstance().getCurrentUser() != null)
             Schyfts.createStage("users.fxml", "User Management");
 
+    }
+
+    public void btnSurgeonLeaveClick(ActionEvent actionEvent) {
+        if (UserContext.getInstance().getCurrentUser() != null)
+            Schyfts.createStage("surgeons_leave.fxml", "Surgeon Leave");
     }
 }

@@ -29,7 +29,6 @@ public class FileUtils {
 
     }
 
-    @Nullable
     public static JSONObject readJSONResource(String resource) throws IOException {
 
         String contents = readResourceToString(resource);
@@ -37,14 +36,13 @@ public class FileUtils {
 
     }
 
-    @Nullable
     public static JSONObject readJSONFile(String fileName) throws IOException {
         return new JSONObject(readFileToString(fileName));
     }
 
     public static void writeFile(String fileName, String contents) throws IOException {
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(fileName)));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
 
         writer.write(contents);
         writer.flush();
@@ -55,7 +53,7 @@ public class FileUtils {
     @NotNull
     public static String readFileToString(String fileName) throws IOException {
 
-        BufferedReader reader = new BufferedReader(new FileReader(new File(fileName)));
+        BufferedReader reader = new BufferedReader(new FileReader(fileName));
         StringBuilder builder = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null)

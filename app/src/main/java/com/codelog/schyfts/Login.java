@@ -1,7 +1,7 @@
 package com.codelog.schyfts;
 
 import com.codelog.schyfts.api.User;
-import com.codelog.schyfts.logging.Logger;
+import com.codelog.clogg.Logger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -16,14 +16,13 @@ import java.util.ResourceBundle;
 public class Login implements Initializable {
 
     @FXML
-    private Button btnLogin;
-    @FXML
     private TextField txtUname;
     @FXML
     private PasswordField pwdPass;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        Schyfts.createStage("logs.fxml", "Log", false);
     }
 
     public void btnLoginClick(ActionEvent actionEvent) {
@@ -45,7 +44,7 @@ public class Login implements Initializable {
             alert.setTitle("Error");
             alert.show();
         } else {
-            Logger.getInstance().debug(String.format("Login successfull (token: %s)", user.getToken()));
+            Logger.getInstance().debug(String.format("Login successfull (token: %s)", user.getToken().substring(0, 4)));
             Schyfts.changeScene("menu.fxml", "Menu");
         }
 

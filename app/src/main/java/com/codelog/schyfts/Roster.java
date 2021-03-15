@@ -1,7 +1,7 @@
 package com.codelog.schyfts;
 
 import com.codelog.schyfts.api.*;
-import com.codelog.schyfts.logging.Logger;
+import com.codelog.clogg.Logger;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
