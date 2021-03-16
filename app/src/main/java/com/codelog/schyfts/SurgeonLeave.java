@@ -1,7 +1,10 @@
 package com.codelog.schyfts;
 
 import com.codelog.clogg.Logger;
-import com.codelog.schyfts.util.FileUtils;
+import com.codelog.schyfts.api.APIException;
+import com.codelog.schyfts.api.APIRequest;
+import com.codelog.schyfts.util.AlertFactory;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -10,10 +13,9 @@ import javafx.scene.control.cell.MapValueFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -30,6 +32,8 @@ public class SurgeonLeave implements Initializable {
     @FXML
     TableView<Map> tblLeave;
     @FXML
+    ProgressBar prgStatus;
+    @FXML
     Button btnSubmit;
 
     private JSONObject leaveJson;
@@ -39,6 +43,9 @@ public class SurgeonLeave implements Initializable {
     @Override
     @SuppressWarnings("unchecked")
     public void initialize(URL location, ResourceBundle resources) {
+
+        TableColumn<Map, String> clmId = new TableColumn<>("ID");
+        clmId.setCellValueFactory(new MapValueFactory<>("id"));
 
         TableColumn<Map, String> clmName = new TableColumn<>("Name");
         clmName.setCellValueFactory(new MapValueFactory<>("name"));
@@ -51,11 +58,48 @@ public class SurgeonLeave implements Initializable {
         TableColumn<Map, String> clmEndDate = new TableColumn<>("End Date");
         clmEndDate.setCellValueFactory(new MapValueFactory<>("end"));
 
-        tblLeave.getColumns().addAll(clmName, clmSurname, clmStartDate, clmEndDate);
+        tblLeave.getColumns().addAll(clmId, clmName, clmSurname, clmStartDate, clmEndDate);
 
         action = false;
         leaveJson = new JSONObject();
         leaveJson.put("leave", new JSONArray());
+
+        AlertFactory.showAndWait("Refreshing Leave");
+        Thread t = new Thread(this::refresh);
+        t.start();
+
+    }
+
+    public void refresh() {
+
+        try {
+            APIRequest req = new APIRequest("getAllSurgeonLeave", true);
+            var res = req.send();
+            prgStatus.setProgress(0.33);
+
+            var results = res.getJSONArray("results");
+
+            var items = FXCollections.<Map<String, String>>observableArrayList();
+            for (int i = 0; i < results.length(); i++) {
+                var leave = results.getJSONObject(i);
+
+                Map<String, String> item = new HashMap<>();
+                item.put("name", leave.getString("name"));
+                item.put("surname", leave.getString("surname"));
+                item.put("start", leave.getString("start").split("T")[0]);
+                item.put("end", leave.getString("end").split("T")[0]);
+                item.put("id", String.valueOf(leave.getInt("id")));
+                items.add(item);
+            }
+            prgStatus.setProgress(0.67);
+
+            tblLeave.getItems().clear();
+            tblLeave.getItems().addAll(items);
+        } catch (IOException | APIException e) {
+            Logger.getInstance().error("Couldn't refresh leave");
+            Logger.getInstance().exception(e);
+        }
+        prgStatus.setProgress(1);
 
     }
 
@@ -68,30 +112,54 @@ public class SurgeonLeave implements Initializable {
     }
 
     public void mnuDelete(ActionEvent actionEvent) {
+
+        if (tblLeave.getSelectionModel().getSelectedItem() == null) {
+            return;
+        }
+
+        APIRequest req = new APIRequest("deleteSurgeonLeave", true, "surname", "startDate");
+
+        var debugSurname = "";
+        var debugStart = "";
+        try {
+            Map item = tblLeave.getSelectionModel().getSelectedItem();
+            debugSurname = (String)item.get("surname");
+            debugStart = (String)item.get("start");
+            req.send(item.get("surname"), item.get("start"));
+            AlertFactory.showAlert("Leave removed");
+        } catch (IOException | APIException e) {
+            Logger.getInstance().debug("surname: " + debugSurname);
+            Logger.getInstance().debug("start: " + debugStart);
+
+            Logger.getInstance().error("Couldn't delete leave");
+            Logger.getInstance().exception(e);
+        }
+
+        Thread t = new Thread(this::refresh);
+        t.start();
+
     }
 
     public void btnSubmitClick(ActionEvent actionEvent) {
 
-        if (!action) {
+            APIRequest req = new APIRequest("addSurgeonLeave", true,
+                    "name", "surname", "startDate", "endDate");
+            try {
+                var res = req.send(
+                        txtName.getText(),
+                        txtSurname.getText(),
+                        dpStartDate.getValue().toString(),
+                        dpEndDate.getValue().toString()
+                );
 
-        } else {
+                AlertFactory.showAlert("Leave added");
+            } catch (APIException | IOException e) {
+                Logger.getInstance().error("Couldn't upload leave");
+                Logger.getInstance().exception(e);
+            }
 
-            var leave = new JSONObject();
-            leave.put("name", txtName.getText());
-            leave.put("surname", txtName.getText());
-            leave.put("startDate", dpStartDate.getValue().toString());
-            leave.put("endDate", dpEndDate.getValue().toString());
-            leaveJson.getJSONArray("leave").put(leave);
-
-
-
-        }
-
-        try {
-            FileUtils.writeFile("leave.json", leaveJson.toString(4));
-        } catch (IOException e) {
-            Logger.getInstance().exception(e);
-        }
+            Thread t = new Thread(this::refresh);
+            t.start();
 
     }
 }

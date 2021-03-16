@@ -1,7 +1,10 @@
 package com.codelog.schyfts;
 
-import com.codelog.schyfts.api.*;
 import com.codelog.clogg.Logger;
+import com.codelog.schyfts.api.APIException;
+import com.codelog.schyfts.api.APIRequest;
+import com.codelog.schyfts.api.Doctor;
+import com.codelog.schyfts.api.LeaveData;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
@@ -36,16 +39,16 @@ import java.util.*;
 @SuppressWarnings({"rawtypes"})
 public class Roster implements Initializable {
 
-    private static int MODULES = 16;
-    private static int LISTS = 14;
-    private static int CALLS = 3;
-    private static int LOCI = 4;
-    private static int STATIC_COLUMNS = 1;
+    private static final int MODULES = 16;
+    private static final int LISTS = 14;
+    private static final int CALLS = 3;
+    private static final int LOCI = 4;
+    private static final int STATIC_COLUMNS = 1;
     private String[][] matrix;
     private static List<String> lists;
     public static Stage primaryStage;
     private List<Doctor> doctors;
-    private static int STATIC_MODULES = 3;
+    private static final int STATIC_MODULES = 3;
     private Map<Integer, List<Integer>> moduleMap;
     private Map<Integer, String> doctorNames;
     private List<String> keys;
@@ -53,6 +56,7 @@ public class Roster implements Initializable {
     private Bucket storageBucket;
     private Map<Integer, Integer> sharedModules;
     private int scheduleOffset;
+    private static Optional<Pair<LocalDate, LocalDate>> dateRange;
 
     @FXML
     private TableView<Map> tblRoster;
@@ -137,7 +141,28 @@ public class Roster implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
 
         sharedModules = getSharedModules();
-        doctors = Doctor.getAllDoctors();
+        var temp = Doctor.getAllDoctors();
+        doctors = new ArrayList<>();
+
+        APIRequest req = new APIRequest("getSetting", true, "key");
+        assert temp != null;
+        List<Integer> order = new ArrayList<>();
+        try {
+            var res = req.send("doctorOrder");
+            var stringResult = res.getJSONObject("result").getString("value").split(",");
+            for (var s : stringResult)
+                order.add(Integer.parseInt(s));
+        } catch (IOException | APIException e) {
+            Logger.getInstance().exception(e);
+        }
+
+        for (var item : order) {
+            for (Doctor d : temp) {
+                if (d.getId() == item) {
+                    doctors.add(d);
+                }
+            }
+        }
 
         scheduleOffset = 0;
 
@@ -290,7 +315,6 @@ public class Roster implements Initializable {
     public void constructModuleMap() {
         moduleMap = new HashMap<>();
         int currentModule = scheduleOffset % MODULES;
-        doctors.sort(Comparator.comparing(Doctor::getSurname));
         for (Doctor d : doctors) {
             if (!sharedModules.containsKey(d.getId())) {
                 moduleMap.put(currentModule + 1, List.of(d.getId()));
@@ -341,8 +365,14 @@ public class Roster implements Initializable {
             return null;
         });
 
-        Optional<Pair<LocalDate, LocalDate>> result = dialog.showAndWait();
-        if (result.isEmpty())
+        dateRange = dialog.showAndWait();
+        generateSchedule();
+    }
+
+    public void generateSchedule() {
+        tblSchedule.getColumns().clear();
+        tblSchedule.getItems().clear();
+        if (dateRange.isEmpty())
             return;
 
         try {
@@ -366,7 +396,6 @@ public class Roster implements Initializable {
         tblSchedule.getColumns().clear();
         tblSchedule.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         tblSchedule.setEditable(true);
-
 
         constructModuleMap();
 
@@ -431,7 +460,6 @@ public class Roster implements Initializable {
         }
 
         tblSchedule.getItems().addAll(items);
-
     }
 
     @SuppressWarnings("unchecked")
@@ -498,10 +526,14 @@ public class Roster implements Initializable {
     public void btnPrevClick(ActionEvent actionEvent) {
         if (tabSchedule.isDisabled())
             return;
+        scheduleOffset--;
+        generateSchedule();
     }
 
     public void btnNextClick(ActionEvent actionEvent) {
         if (tabSchedule.isDisabled())
             return;
+        scheduleOffset++;
+        generateSchedule();
     }
 }

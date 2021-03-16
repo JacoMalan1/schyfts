@@ -24,7 +24,7 @@ config.json
 *.csv
 
 # Symlinks
-lib/
+lib
 
 # Credentials
 service-account.json
