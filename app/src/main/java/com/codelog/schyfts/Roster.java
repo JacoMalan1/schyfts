@@ -5,10 +5,14 @@ import com.codelog.schyfts.api.APIException;
 import com.codelog.schyfts.api.APIRequest;
 import com.codelog.schyfts.api.Doctor;
 import com.codelog.schyfts.api.LeaveData;
+import com.codelog.schyfts.util.AlertFactory;
+import com.codelog.schyfts.util.General;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.StorageOptions;
+import com.google.common.util.concurrent.Atomics;
+import com.sun.javafx.print.PrinterJobImpl;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -16,17 +20,20 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.print.*;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import org.json.JSONObject;
 
 import java.io.*;
 import java.net.URL;
@@ -35,6 +42,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 @SuppressWarnings({"rawtypes"})
 public class Roster implements Initializable {
@@ -121,6 +131,19 @@ public class Roster implements Initializable {
 
         leave = LeaveData.getAllLeave();
 
+        try {
+            APIRequest getSettingRequest = new APIRequest("getSetting", true, "key");
+            var response = getSettingRequest.send("scheduleOffset");
+            Logger.getInstance().debug(String.format(
+                    "Got setting scheduleOffset: %s",
+                    response.getJSONObject("result").getString("value"))
+            );
+            Logger.getInstance().debug(response.toString(4));
+            scheduleOffset = Integer.parseInt(response.getJSONObject("result").getString("value"));
+        } catch (IOException | IllegalArgumentException | APIException e) {
+            Logger.getInstance().exception(e);
+        }
+
     }
 
     public void updateItems() {
@@ -139,6 +162,8 @@ public class Roster implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
+        tblSchedule.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         sharedModules = getSharedModules();
         var temp = Doctor.getAllDoctors();
@@ -369,24 +394,15 @@ public class Roster implements Initializable {
         generateSchedule();
     }
 
+    private int maxWeeks;
+    private JSONObject surgeonLeaveJson;
+
     public void generateSchedule() {
+        maxWeeks = 0;
         tblSchedule.getColumns().clear();
         tblSchedule.getItems().clear();
         if (dateRange.isEmpty())
             return;
-
-        try {
-            APIRequest getSettingRequest = new APIRequest("getSetting", true, "key");
-            var response = getSettingRequest.send("scheduleOffset");
-            Logger.getInstance().debug(String.format(
-                    "Got setting scheduleOffset: %s",
-                    response.getJSONObject("result").getString("value"))
-            );
-            Logger.getInstance().debug(response.toString(4));
-            scheduleOffset = Integer.parseInt(response.getJSONObject("result").getString("value"));
-        } catch (IOException | IllegalArgumentException | APIException e) {
-            Logger.getInstance().exception(e);
-        }
 
         keys = new ArrayList<>();
         tabSchedule.setDisable(false);
@@ -413,7 +429,22 @@ public class Roster implements Initializable {
                 clmDoctor.setCellValueFactory(new MapValueFactory<>(doctorNames.get(doctor)));
                 keys.add(doctorNames.get(doctor));
                 clmDoctor.setEditable(true);
-                clmDoctor.setCellFactory(TextFieldTableCell.forTableColumn());
+                clmDoctor.setCellFactory(param -> new TableCell<>() {
+                    @Override
+                    protected void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (item == null || empty) {
+                            setText("");
+                            setStyle("");
+                        } else {
+                            Text text = new Text(item);
+                            text.setFont(new Font(8));
+                            text.setStyle("-fx-text-alignment:left;");
+                            text.wrappingWidthProperty().bind(getTableColumn().widthProperty());
+                            setGraphic(text);
+                        }
+                    }
+                });
                 clm.getColumns().add(clmDoctor);
             }
 
@@ -430,24 +461,6 @@ public class Roster implements Initializable {
         clmStatic.getColumns().add(joubert);
         tblSchedule.getColumns().add(clmStatic);
 
-        for (int i = 0; i < CALLS; i++) {
-            TableColumn<Map, String> clmCall = new TableColumn<>(String.format("Call %d", i + 1));
-            clmCall.setEditable(true);
-            clmCall.setCellFactory(TextFieldTableCell.forTableColumn());
-            clmCall.setCellValueFactory(new MapValueFactory<>(String.format("call%d", i + 1)));
-            keys.add(String.format("call%d", i + 1));
-            tblSchedule.getColumns().add(clmCall);
-        }
-
-        for (int i = 0; i < LOCI; i++) {
-            TableColumn<Map, String> clm = new TableColumn<>(String.format("Locum %d", i + 1));
-            clm.setEditable(true);
-            clm.setCellValueFactory(new MapValueFactory<>(String.format("locum%d", i + 1)));
-            keys.add(String.format("locum%d", i + 1));
-            clm.setCellFactory(TextFieldTableCell.forTableColumn());
-            tblSchedule.getColumns().add(clm);
-        }
-
         ObservableList<Map<String, String>> items = FXCollections.observableArrayList();
         for (int i = 0; i < LISTS; i++) {
             var item = new HashMap<String, String>();
@@ -460,6 +473,46 @@ public class Roster implements Initializable {
         }
 
         tblSchedule.getItems().addAll(items);
+
+        var surgeonLeaveJson = SurgeonLeave.refresh();
+
+        LocalDate currentStart = dateRange.get().getKey().plusWeeks(scheduleOffset);
+        LocalDate currentEnd = currentStart.plusDays(5);
+
+        for (var leave : surgeonLeaveJson) {
+            // name, surname, start, end
+            String name = leave.getString("name");
+            String surname = leave.getString("surname");
+            LocalDate start = LocalDate.parse(leave.getString("start").split("T")[0]);
+            LocalDate end = LocalDate.parse(leave.getString("end").split("T")[0]);
+
+            List<Pair<Map, String>> itemsToRemove = new ArrayList<>();
+            for (var item : tblSchedule.getItems()) {
+                for (var key : item.keySet()) {
+                    var value = (String)item.get(key);
+                    if (value != null) {
+
+                        var fullName = (name.equals(" ")) ? surname : "%s %s".formatted(name, surname);
+                        var valueFullName = (value.startsWith("DH") ||
+                                value.startsWith("LH")) ? value.substring(3) : value;
+                        if (valueFullName.equals(fullName)) {
+                            var itemDate = currentStart.plusDays(tblSchedule.getItems().indexOf(item));
+                            if (!itemDate.isAfter(end) && !itemDate.isBefore(start)) {
+                                Logger.getInstance().debug("To remove: %s(%s)".formatted(fullName, key));
+                                itemsToRemove.add(new Pair<>(item, (String) key));
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (var item : itemsToRemove) {
+                item.getKey().put(item.getValue(), "OFF");
+            }
+
+            tblSchedule.refresh();
+
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -536,4 +589,20 @@ public class Roster implements Initializable {
         scheduleOffset++;
         generateSchedule();
     }
+
+    public void mnuPrintClick(ActionEvent actionEvent) {
+        tblSchedule.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        PrinterJob job = PrinterJob.createPrinterJob(Printer.getDefaultPrinter());
+        if (job.showPrintDialog(primaryStage.getOwner())) {
+            job.printPage(Printer.getDefaultPrinter()
+                    .createPageLayout(Paper.A4, PageOrientation.LANDSCAPE, Printer.MarginType.DEFAULT),
+                    tblSchedule);
+            job.endJob();
+        }
+        primaryStage.setResizable(true);
+        primaryStage.setHeight(primaryStage.getMaxHeight());
+        primaryStage.setWidth(primaryStage.getMaxWidth());
+        tblSchedule.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+    }
+
 }

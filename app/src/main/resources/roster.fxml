@@ -59,12 +59,13 @@
                                           <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                                        </accelerator>
                                     </MenuItem>
+                                    <MenuItem fx:id="mnuPrint" mnemonicParsing="false" onAction="#mnuPrintClick" text="Print" />
                               </items>
                             </Menu>
                           </menus>
                         </MenuBar>
-                        <Button fx:id="btnPrev" onAction="#btnPrevClick" mnemonicParsing="false" text="Previous week" />
-                        <Button fx:id="btnNext" onAction="#btnNextClick" mnemonicParsing="false" text="Next Week" />
+                        <Button fx:id="btnPrev" mnemonicParsing="false" onAction="#btnPrevClick" text="Previous week" />
+                        <Button fx:id="btnNext" mnemonicParsing="false" onAction="#btnNextClick" text="Next Week" />
                      </children>
                   </HBox>
                </top>

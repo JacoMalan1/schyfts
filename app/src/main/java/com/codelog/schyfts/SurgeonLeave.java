@@ -14,10 +14,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 @SuppressWarnings("rawtypes")
 public class SurgeonLeave implements Initializable {
@@ -39,49 +39,81 @@ public class SurgeonLeave implements Initializable {
     private JSONObject leaveJson;
 
     private boolean action;
+    public static SurgeonLeave instance;
 
     @Override
     @SuppressWarnings("unchecked")
     public void initialize(URL location, ResourceBundle resources) {
 
-        TableColumn<Map, String> clmId = new TableColumn<>("ID");
-        clmId.setCellValueFactory(new MapValueFactory<>("id"));
+        if (prgStatus != null && tblLeave != null) {
 
-        TableColumn<Map, String> clmName = new TableColumn<>("Name");
-        clmName.setCellValueFactory(new MapValueFactory<>("name"));
+            TableColumn<Map, String> clmId = new TableColumn<>("ID");
+            clmId.setCellValueFactory(new MapValueFactory<>("id"));
 
-        TableColumn<Map, String> clmSurname = new TableColumn<>("Surname");
-        clmSurname.setCellValueFactory(new MapValueFactory<>("surname"));
+            TableColumn<Map, String> clmName = new TableColumn<>("Name");
+            clmName.setCellValueFactory(new MapValueFactory<>("name"));
 
-        TableColumn<Map, String> clmStartDate = new TableColumn<>("Start Date");
-        clmStartDate.setCellValueFactory(new MapValueFactory<>("start"));
-        TableColumn<Map, String> clmEndDate = new TableColumn<>("End Date");
-        clmEndDate.setCellValueFactory(new MapValueFactory<>("end"));
+            TableColumn<Map, String> clmSurname = new TableColumn<>("Surname");
+            clmSurname.setCellValueFactory(new MapValueFactory<>("surname"));
 
-        tblLeave.getColumns().addAll(clmId, clmName, clmSurname, clmStartDate, clmEndDate);
+            TableColumn<Map, String> clmStartDate = new TableColumn<>("Start Date");
+            clmStartDate.setCellValueFactory(new MapValueFactory<>("start"));
+            TableColumn<Map, String> clmEndDate = new TableColumn<>("End Date");
+            clmEndDate.setCellValueFactory(new MapValueFactory<>("end"));
 
-        action = false;
-        leaveJson = new JSONObject();
-        leaveJson.put("leave", new JSONArray());
+            tblLeave.getColumns().addAll(clmId, clmName, clmSurname, clmStartDate, clmEndDate);
 
-        AlertFactory.showAndWait("Refreshing Leave");
-        Thread t = new Thread(this::refresh);
-        t.start();
+            action = false;
+            leaveJson = new JSONObject();
+            leaveJson.put("leave", new JSONArray());
+
+            instance = this;
+
+            AlertFactory.showAndWait("Refreshing Leave");
+        }
+
+        startRefresh();
 
     }
 
-    public void refresh() {
+    public void startRefresh() {
+        try {
+            Method refresh = getClass().getMethod("refresh");
+            Runnable r = () -> {
+                try {
+                    refresh.invoke(null);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            };
+            Thread t = new Thread(r);
+            t.start();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static List<JSONObject> refresh() {
+        if (instance == null) {
+            instance = new SurgeonLeave();
+            instance.initialize(null, null);
+        }
+
+        List<JSONObject> leaveList = new ArrayList<>();
 
         try {
             APIRequest req = new APIRequest("getAllSurgeonLeave", true);
             var res = req.send();
-            prgStatus.setProgress(0.33);
+
+            if (instance.prgStatus != null)
+                instance.prgStatus.setProgress(0.33);
 
             var results = res.getJSONArray("results");
 
             var items = FXCollections.<Map<String, String>>observableArrayList();
             for (int i = 0; i < results.length(); i++) {
                 var leave = results.getJSONObject(i);
+                leaveList.add(leave);
 
                 Map<String, String> item = new HashMap<>();
                 item.put("name", leave.getString("name"));
@@ -91,16 +123,22 @@ public class SurgeonLeave implements Initializable {
                 item.put("id", String.valueOf(leave.getInt("id")));
                 items.add(item);
             }
-            prgStatus.setProgress(0.67);
+            if (instance.prgStatus != null)
+                instance.prgStatus.setProgress(0.67);
 
-            tblLeave.getItems().clear();
-            tblLeave.getItems().addAll(items);
+            if (instance.tblLeave != null) {
+                instance.tblLeave.getItems().clear();
+                instance.tblLeave.getItems().addAll(items);
+            }
         } catch (IOException | APIException e) {
             Logger.getInstance().error("Couldn't refresh leave");
             Logger.getInstance().exception(e);
         }
-        prgStatus.setProgress(1);
 
+        if (instance.prgStatus != null)
+            instance.prgStatus.setProgress(1);
+
+        return leaveList;
     }
 
     public void mnuAddLeave(ActionEvent actionEvent) {
@@ -135,8 +173,7 @@ public class SurgeonLeave implements Initializable {
             Logger.getInstance().exception(e);
         }
 
-        Thread t = new Thread(this::refresh);
-        t.start();
+        startRefresh();
 
     }
 
@@ -158,8 +195,7 @@ public class SurgeonLeave implements Initializable {
                 Logger.getInstance().exception(e);
             }
 
-            Thread t = new Thread(this::refresh);
-            t.start();
+            startRefresh();
 
     }
 }
