@@ -11,66 +11,72 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 
-<TabPane xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codelog.schyfts.Roster">
-   <tabs>
-      <Tab fx:id="tabMatrix" closable="false" text="Matrix">
-         <content>
-            <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="1280.0">
-               <top>
-                  <MenuBar BorderPane.alignment="CENTER">
-                    <menus>
-                      <Menu text="File">
-                        <items>
-                              <MenuItem fx:id="mnuSave" mnemonicParsing="false" onAction="#mnuSave" text="Save Roster">
-                                 <accelerator>
-                                    <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                                 </accelerator></MenuItem>
-                        </items>
-                      </Menu>
-                        <Menu mnemonicParsing="false" text="Generate">
-                          <items>
-                            <MenuItem fx:id="mnuGenerateSchedule" mnemonicParsing="false" onAction="#mnuGenerateSchedule" text="Schedule" />
-                          </items>
-                        </Menu>
-                    </menus>
-                  </MenuBar>
-               </top>
-               <center>
-                  <TableView fx:id="tblRoster" editable="true" prefHeight="200.0" prefWidth="200.0" />
-               </center>
-            </BorderPane>
-         </content>
-      </Tab>
-      <Tab fx:id="tabSchedule" closable="false" text="Schedule">
-        <content>
-          <BorderPane>
-               <center>
-                  <TableView fx:id="tblSchedule" prefHeight="200.0" prefWidth="200.0" />
-               </center>
-               <top>
-                  <HBox alignment="CENTER" BorderPane.alignment="CENTER">
-                     <children>
-                        <MenuBar HBox.hgrow="ALWAYS">
+
+<BorderPane fx:id="bdpRoot" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codelog.schyfts.Roster">
+   <center>
+      <TabPane>
+         <tabs>
+            <Tab fx:id="tabMatrix" closable="false" text="Matrix">
+               <content>
+                  <BorderPane>
+                     <top>
+                        <MenuBar BorderPane.alignment="CENTER">
                           <menus>
-                            <Menu mnemonicParsing="false" text="File">
+                            <Menu text="File">
                               <items>
-                                <MenuItem fx:id="mnuSaveSchedule" mnemonicParsing="false" onAction="#mnuSaveSchedule" text="Save As">
+                                    <MenuItem fx:id="mnuSave" mnemonicParsing="false" onAction="#mnuSave" text="Save Roster">
                                        <accelerator>
                                           <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                                        </accelerator>
                                     </MenuItem>
-                                    <MenuItem fx:id="mnuPrint" mnemonicParsing="false" onAction="#mnuPrintClick" text="Print" />
                               </items>
                             </Menu>
+                              <Menu mnemonicParsing="false" text="Generate">
+                                <items>
+                                  <MenuItem fx:id="mnuGenerateSchedule" mnemonicParsing="false" onAction="#mnuGenerateSchedule" text="Schedule" />
+                                </items>
+                              </Menu>
                           </menus>
                         </MenuBar>
-                        <Button fx:id="btnPrev" mnemonicParsing="false" onAction="#btnPrevClick" text="Previous week" />
-                        <Button fx:id="btnNext" mnemonicParsing="false" onAction="#btnNextClick" text="Next Week" />
-                     </children>
-                  </HBox>
-               </top>
-          </BorderPane>
-        </content>
-      </Tab>
-   </tabs>
-</TabPane>
+                     </top>
+                     <center>
+                        <TableView fx:id="tblRoster" editable="true" minHeight="720.0" minWidth="1280.0" />
+                     </center>
+                  </BorderPane>
+               </content>
+            </Tab>
+            <Tab fx:id="tabSchedule" closable="false" text="Schedule">
+              <content>
+                <BorderPane>
+                     <center>
+                        <TableView fx:id="tblSchedule" prefHeight="200.0" prefWidth="200.0" />
+                     </center>
+                     <top>
+                        <HBox alignment="CENTER" BorderPane.alignment="CENTER">
+                           <children>
+                              <MenuBar HBox.hgrow="ALWAYS">
+                                <menus>
+                                  <Menu mnemonicParsing="false" text="File">
+                                    <items>
+                                      <MenuItem fx:id="mnuSaveSchedule" mnemonicParsing="false" onAction="#mnuSaveSchedule" text="Save As">
+                                             <accelerator>
+                                                <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                                             </accelerator>
+                                          </MenuItem>
+                                          <MenuItem fx:id="mnuPrint" mnemonicParsing="false" onAction="#mnuPrintClick" text="Print" />
+                                    </items>
+                                  </Menu>
+                                </menus>
+                              </MenuBar>
+                              <Button fx:id="btnPrev" mnemonicParsing="false" onAction="#btnPrevClick" text="Previous week" />
+                              <Button fx:id="btnNext" mnemonicParsing="false" onAction="#btnNextClick" text="Next Week" />
+                           </children>
+                        </HBox>
+                     </top>
+                </BorderPane>
+              </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+   </center>
+</BorderPane>

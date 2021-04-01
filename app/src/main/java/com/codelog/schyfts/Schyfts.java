@@ -7,6 +7,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.IOException;
 import java.net.URL;
@@ -77,6 +78,7 @@ public class Schyfts extends Application {
 
         Scene scene = new Scene(root);
         Stage stage = new Stage();
+        stage.initStyle(StageStyle.DECORATED);
         stage.setTitle(title);
         stage.setScene(scene);
         stage.initOwner(currentStage);

@@ -25,6 +25,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -76,6 +77,8 @@ public class Roster implements Initializable {
     private Tab tabMatrix;
     @FXML
     private Tab tabSchedule;
+    @FXML
+    private BorderPane bdpRoot;
 
     public void loadRoster() {
         var matrixBlob = storageBucket.get("matrix.csv");
@@ -363,7 +366,6 @@ public class Roster implements Initializable {
     }
 
     public void mnuGenerateSchedule(ActionEvent actionEvent) {
-
         tblSchedule.getStylesheets().add("styles.css");
         Dialog<Pair<LocalDate, LocalDate>> dialog = new Dialog<>();
         dialog.setTitle("Schedule options");
@@ -399,10 +401,10 @@ public class Roster implements Initializable {
 
     public void generateSchedule() {
         maxWeeks = 0;
+
         tblSchedule.getColumns().clear();
         tblSchedule.getItems().clear();
-        if (dateRange.isEmpty())
-            return;
+        assert !dateRange.isPresent();
 
         keys = new ArrayList<>();
         tabSchedule.setDisable(false);
@@ -438,7 +440,6 @@ public class Roster implements Initializable {
                             setStyle("");
                         } else {
                             Text text = new Text(item);
-                            text.setFont(new Font(8));
                             text.setStyle("-fx-text-alignment:left;");
                             text.wrappingWidthProperty().bind(getTableColumn().widthProperty());
                             setGraphic(text);
@@ -478,6 +479,18 @@ public class Roster implements Initializable {
 
         LocalDate currentStart = dateRange.get().getKey().plusWeeks(scheduleOffset);
         LocalDate currentEnd = currentStart.plusDays(5);
+        var day = currentStart.getDayOfMonth();
+        for (int i = 0; i < lists.size(); i += 2) {
+            for (var j = i; j < i + 2; j++) {
+                if (lists.get(j).contains("\n"))
+                    lists.set(j, lists.get(j).substring(lists.get(j).indexOf('\n') + 1));
+                lists.set(j, (day + i) + "\n" + lists.get(j));
+            }
+        }
+
+        for (var i = 0; i < tblSchedule.getItems().size(); i++) {
+            tblSchedule.getItems().get(i).put("List", lists.get(i));
+        }
 
         for (var leave : surgeonLeaveJson) {
             // name, surname, start, end
@@ -493,8 +506,9 @@ public class Roster implements Initializable {
                     if (value != null) {
 
                         var fullName = (name.equals(" ")) ? surname : "%s %s".formatted(name, surname);
-                        var valueFullName = (value.startsWith("DH") ||
-                                value.startsWith("LH")) ? value.substring(3) : value;
+                        var valueFullName = (
+                                value.startsWith("LH") || value.startsWith("DH")) ? value.substring(3) :
+                                value.startsWith("DCL") ? value.substring(4) : value;
                         if (valueFullName.equals(fullName)) {
                             var itemDate = currentStart.plusDays(tblSchedule.getItems().indexOf(item));
                             if (!itemDate.isAfter(end) && !itemDate.isBefore(start)) {
@@ -511,6 +525,8 @@ public class Roster implements Initializable {
             }
 
             tblSchedule.refresh();
+            var rosterPeriod = dateRange.get().getKey().until(dateRange.get().getValue());
+            maxWeeks = (int)Math.floor((float)rosterPeriod.getDays() / 7.0f);
 
         }
     }
@@ -579,12 +595,16 @@ public class Roster implements Initializable {
     public void btnPrevClick(ActionEvent actionEvent) {
         if (tabSchedule.isDisabled())
             return;
+        if (scheduleOffset <= 0)
+            return;
         scheduleOffset--;
         generateSchedule();
     }
 
     public void btnNextClick(ActionEvent actionEvent) {
         if (tabSchedule.isDisabled())
+            return;
+        if (scheduleOffset >= maxWeeks)
             return;
         scheduleOffset++;
         generateSchedule();
