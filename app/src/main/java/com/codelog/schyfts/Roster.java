@@ -5,6 +5,7 @@ import com.codelog.schyfts.api.APIException;
 import com.codelog.schyfts.api.APIRequest;
 import com.codelog.schyfts.api.Doctor;
 import com.codelog.schyfts.api.LeaveData;
+import com.codelog.schyfts.google.StorageContext;
 import com.codelog.schyfts.util.AlertFactory;
 import com.codelog.schyfts.util.General;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -197,16 +198,8 @@ public class Roster implements Initializable {
         var stream = getClass().getClassLoader().getResourceAsStream("google/service-account.json");
         if (stream != null) {
 
-            try {
-                var credentials = GoogleCredentials.fromStream(stream);
-                var storage = StorageOptions.newBuilder().setCredentials(credentials)
-                        .setProjectId(Reference.GOOGLE_CLOUD_PROJECT_ID).build().getService();
-
-                storageBucket = storage.get("nelanest-roster");
-
-            } catch (IOException e) {
-                Logger.getInstance().exception(e);
-            }
+            var storage = StorageContext.getInstance().getStorage();
+            storageBucket = storage.get("nelanest-roster");
 
         } else {
             Logger.getInstance().error("Couldn't load storage credentials");

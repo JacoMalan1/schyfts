@@ -13,6 +13,7 @@ import javafx.scene.control.TextArea;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
@@ -67,6 +68,11 @@ public class Log implements LogEventSubscriber, Initializable {
             Logger.getInstance().exception(e);
             return;
         }
+
+        var timestamp = Date.from(Instant.now());
+        digest += timestamp.toString();
+        Logger.getInstance().debug("Uploading log file (filename: %s)".formatted(digest));
+
     }
 
     public void btnSaveClick(ActionEvent actionEvent) {
