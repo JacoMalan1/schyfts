@@ -53,7 +53,7 @@ public class Login implements Initializable {
             alert.show();
         } else {
             Logger.getInstance().debug(String.format("Login successfull (token: %s)", user.getToken().substring(0, 4)));
-            Schyfts.changeScene("menu.fxml", "Menu");
+            Schyfts.createStage("menu.fxml", "Menu", false);
         }
 
     }

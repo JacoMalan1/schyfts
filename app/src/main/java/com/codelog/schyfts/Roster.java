@@ -43,6 +43,9 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.Month;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -335,7 +338,10 @@ public class Roster implements Initializable {
 
     public void constructModuleMap() {
         moduleMap = new HashMap<>();
-        int currentModule = scheduleOffset % MODULES;
+        assert dateRange.isPresent();
+        var weeks = Reference.GENESIS_TIME.until(dateRange.get().getKey());
+
+        int currentModule = (scheduleOffset + (int)Math.floor((float)weeks.getDays() / 7.0f) + 2) % MODULES;
         for (Doctor d : doctors) {
             if (!sharedModules.containsKey(d.getId())) {
                 moduleMap.put(currentModule + 1, List.of(d.getId()));
@@ -473,12 +479,13 @@ public class Roster implements Initializable {
         LocalDate currentStart = dateRange.get().getKey().plusWeeks(scheduleOffset);
         LocalDate currentEnd = currentStart.plusDays(5);
         var day = currentStart.getDayOfMonth();
-        for (int i = 0; i < lists.size(); i += 2) {
-            for (var j = i; j < i + 2; j++) {
-                if (lists.get(j).contains("\n"))
-                    lists.set(j, lists.get(j).substring(lists.get(j).indexOf('\n') + 1));
-                lists.set(j, (day + i) + "\n" + lists.get(j));
-            }
+
+        int idx = 0;
+        for (var j = 0; j < lists.size(); j++) {
+            if (lists.get(j).contains("\n"))
+                lists.set(j, lists.get(j).substring(lists.get(j).indexOf('\n') + 1));
+            lists.set(j, currentStart.plusDays(idx).getDayOfMonth() + "\n" + lists.get(j));
+            idx += j % 2;
         }
 
         for (var i = 0; i < tblSchedule.getItems().size(); i++) {
@@ -519,7 +526,7 @@ public class Roster implements Initializable {
 
             tblSchedule.refresh();
             var rosterPeriod = dateRange.get().getKey().until(dateRange.get().getValue());
-            maxWeeks = (int)Math.floor((float)rosterPeriod.getDays() / 7.0f);
+            maxWeeks = rosterPeriod.getMonths() * 4 + Math.round(rosterPeriod.getDays() / 7.0f);
 
         }
     }
