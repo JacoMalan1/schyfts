@@ -509,13 +509,14 @@ public class Roster implements Initializable {
                         var valueFullName = (
                                 value.startsWith("LH") || value.startsWith("DH")) ? value.substring(3) :
                                 value.startsWith("DCL") ? value.substring(4) : value;
-                        if (valueFullName.equals(fullName)) {
-                            var itemDate = currentStart.plusDays(tblSchedule.getItems().indexOf(item));
+                        if (value.contains(surname)) {
+                            var itemDate = currentStart.plusDays((tblSchedule.getItems().indexOf(item) / 2));
                             if (!itemDate.isAfter(end) && !itemDate.isBefore(start)) {
                                 Logger.getInstance().debug("To remove: %s(%s)".formatted(fullName, key));
                                 itemsToRemove.add(new Pair<>(item, (String) key));
                             }
                         }
+
                     }
                 }
             }
