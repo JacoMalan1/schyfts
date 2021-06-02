@@ -6,14 +6,9 @@ import com.codelog.schyfts.api.APIRequest;
 import com.codelog.schyfts.api.Doctor;
 import com.codelog.schyfts.api.LeaveData;
 import com.codelog.schyfts.google.StorageContext;
-import com.codelog.schyfts.util.AlertFactory;
-import com.codelog.schyfts.util.General;
-import com.google.auth.oauth2.GoogleCredentials;
+import com.codelog.schyfts.util.RosterUtils;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
-import com.google.cloud.storage.StorageOptions;
-import com.google.common.util.concurrent.Atomics;
-import com.sun.javafx.print.PrinterJobImpl;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -21,7 +16,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.print.*;
+import javafx.print.PageOrientation;
+import javafx.print.Paper;
+import javafx.print.Printer;
+import javafx.print.PrinterJob;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.MapValueFactory;
@@ -29,7 +27,6 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -43,13 +40,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.time.Month;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 @SuppressWarnings({"rawtypes"})
 public class Roster implements Initializable {
@@ -67,7 +58,7 @@ public class Roster implements Initializable {
     private Map<Integer, List<Integer>> moduleMap;
     private Map<Integer, String> doctorNames;
     private List<String> keys;
-    private List<LeaveData> leave;
+    private List<LeaveData> doctorLeave;
     private Bucket storageBucket;
     private Map<Integer, Integer> sharedModules;
     private int scheduleOffset;
@@ -136,7 +127,7 @@ public class Roster implements Initializable {
         for (var d : doctors)
             doctorNames.put(d.getId(), String.format("%s %s", d.getSurname(), d.getName()));
 
-        leave = LeaveData.getAllLeave();
+        doctorLeave = LeaveData.getAllLeave();
 
         try {
             APIRequest getSettingRequest = new APIRequest("getSetting", true, "key");
@@ -339,9 +330,9 @@ public class Roster implements Initializable {
     public void constructModuleMap() {
         moduleMap = new HashMap<>();
         assert dateRange.isPresent();
-        var weeks = Reference.GENESIS_TIME.until(dateRange.get().getKey());
+        var period = dateRange.get().getKey().toEpochDay() - Reference.GENESIS_TIME.toEpochDay();
 
-        int currentModule = (scheduleOffset + (int)Math.floor((float)weeks.getDays() / 7.0f) + 2) % MODULES;
+        int currentModule = (scheduleOffset + (int)Math.floor((float)period / 7.0f) + 2) % MODULES;
         for (Doctor d : doctors) {
             if (!sharedModules.containsKey(d.getId())) {
                 moduleMap.put(currentModule + 1, List.of(d.getId()));
@@ -461,6 +452,18 @@ public class Roster implements Initializable {
         clmStatic.getColumns().add(joubert);
         tblSchedule.getColumns().add(clmStatic);
 
+        for (int i = 0; i < 3; i++) {
+            TableColumn<Map, String> clmCall = new TableColumn<>("Call " + (i + 1));
+            clmCall.setCellValueFactory(new MapValueFactory<>("call" + (i + 1)));
+            tblSchedule.getColumns().add(clmCall);
+        }
+
+        for (int i = 0; i < 5; i++) {
+            TableColumn<Map, String> clmLoc = new TableColumn<>("Loc " + (i + 1));
+            clmLoc.setCellValueFactory(new MapValueFactory<>("loc" + (i + 1)));
+            tblSchedule.getColumns().add(clmLoc);
+        }
+
         ObservableList<Map<String, String>> items = FXCollections.observableArrayList();
         for (int i = 0; i < LISTS; i++) {
             var item = new HashMap<String, String>();
@@ -490,6 +493,17 @@ public class Roster implements Initializable {
 
         for (var i = 0; i < tblSchedule.getItems().size(); i++) {
             tblSchedule.getItems().get(i).put("List", lists.get(i));
+        }
+
+        for (var item : tblSchedule.getItems()) {
+            for (int i = 0; i < 3; i++) {
+                item.put("call" + (i + 1), "");
+                keys.add("call" + (i + 1));
+            }
+            for (int i = 0; i < 5; i++) {
+                item.put("loc" + (i + 1), "");
+                keys.add("loc" + (i + 1));
+            }
         }
 
         for (var leave : surgeonLeaveJson) {
@@ -530,7 +544,76 @@ public class Roster implements Initializable {
             maxWeeks = rosterPeriod.getMonths() * 4 + Math.round(rosterPeriod.getDays() / 7.0f);
 
         }
+
+        var i = currentStart;
+
+        while (i.isBefore(currentEnd) || i.isEqual(currentEnd)) {
+            var intervalLength = currentStart.until(i).getDays();
+
+            Map<String, String>[] dayitems = new Map[] { tblSchedule.getItems().get(intervalLength * 2),
+                                                        tblSchedule.getItems().get(intervalLength * 2 + 1) };
+            var freeSlots = RosterUtils.getFreeSlots(dayitems);
+            for (var leave : doctorLeave) {
+
+                if ((i.isAfter(leave.getStartDate()) || i.isEqual(leave.getStartDate())
+                    ) && (i.isBefore(leave.getEndDate()) || i.isEqual(leave.getEndDate()))) {
+
+                    // OVERLAP!!!
+                    // If this code executes, it means that we have a doctor with leave on the day of month 'i'.
+
+                    var keys = dayitems[0].keySet();
+                    for (var key : keys) {
+                        var value = dayitems[0].get(key);
+                        var nextDayValue = dayitems[1].get(key);
+
+                        if ("%s %s".formatted(leave.getDoctorSurname(), leave.getDoctorName()).equals(key)) {
+
+                            if (!dayitems[0].get(key).contains("#"))
+                                dayitems[0].put(key, "#" + dayitems[0].get(key));
+
+                            if (!dayitems[1].get(key).contains("#"))
+                                dayitems[1].put(key, "#" + dayitems[1].get(key));
+
+//                            for (int k = 0; k < freeSlots.size(); k++) {
+//                                var slot = freeSlots.get(k);
+//                                var item = slot.getKey();
+//                                var kv = slot.getValue();
+//
+//                                if (item.equals(dayitems[0])) {
+//
+//                                    if (!(value.contains("OFF") && nextDayValue.contains("OFF")) && !value.contains("#")
+//                                            && !nextDayValue.contains("#") && !value.contains("$")
+//                                            && !nextDayValue.contains("$")) {
+//                                        dayitems[0].put(kv.getKey(), "$" + value.replace("#", ""));
+//                                        dayitems[0].put(key, "#");
+//
+//                                        dayitems[1].put(kv.getKey(), "$" + nextDayValue);
+//                                        dayitems[1].put(key, "#");
+//
+//                                        freeSlots.remove(slot);
+//                                        freeSlots = RosterUtils.getFreeSlots(dayitems);
+//                                        break;
+//                                    }
+//
+//                                }
+//
+//                            }
+
+                        }
+
+                    }
+                }
+
+            }
+
+            i = i.plusDays(1);
+        }
+
+        tblSchedule.refresh();
+
     }
+
+
 
     @SuppressWarnings("unchecked")
     public void mnuSaveSchedule(ActionEvent actionEvent) {
@@ -555,7 +638,11 @@ public class Roster implements Initializable {
 
             StringBuilder builder = new StringBuilder();
             for (var key : keys) {
-                builder.append(item.get(key)).append(',');
+                if (key.equals("List")) {
+                    builder.append(item.get(key).replace('\n', ' ')).append(',');
+                } else {
+                    builder.append(item.get(key)).append(',');
+                }
             }
             builder.deleteCharAt(builder.length() - 1);
             lines.add(builder.toString());
