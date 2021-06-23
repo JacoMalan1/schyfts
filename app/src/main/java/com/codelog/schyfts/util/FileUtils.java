@@ -32,6 +32,7 @@ public class FileUtils {
     public static JSONObject readJSONResource(String resource) throws IOException {
 
         String contents = readResourceToString(resource);
+        var j = new JSONObject();
         return new JSONObject(contents);
 
     }

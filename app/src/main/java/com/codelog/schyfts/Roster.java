@@ -6,6 +6,8 @@ import com.codelog.schyfts.api.APIRequest;
 import com.codelog.schyfts.api.Doctor;
 import com.codelog.schyfts.api.LeaveData;
 import com.codelog.schyfts.google.StorageContext;
+import com.codelog.schyfts.util.AlertFactory;
+import com.codelog.schyfts.util.PrintUtils;
 import com.codelog.schyfts.util.RosterUtils;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
@@ -16,14 +18,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.print.PageOrientation;
-import javafx.print.Paper;
-import javafx.print.Printer;
-import javafx.print.PrinterJob;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
@@ -35,6 +35,7 @@ import javafx.util.Pair;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -50,6 +51,7 @@ public class Roster implements Initializable {
     private static final int CALLS = 3;
     private static final int LOCI = 4;
     private static final int STATIC_COLUMNS = 1;
+
     private String[][] matrix;
     private static List<String> lists;
     public static Stage primaryStage;
@@ -65,6 +67,8 @@ public class Roster implements Initializable {
     private static Optional<Pair<LocalDate, LocalDate>> dateRange;
 
     @FXML
+    private ImageView imgLogo;
+    @FXML
     private TableView<Map> tblRoster;
     @FXML
     private TableView<Map> tblSchedule;
@@ -74,6 +78,12 @@ public class Roster implements Initializable {
     private Tab tabSchedule;
     @FXML
     private BorderPane bdpRoot;
+    @FXML
+    private TextArea txtDateRange;
+    @FXML
+    private TextArea txtAddress;
+    @FXML
+    private GridPane grdPrint;
 
     public void loadRoster() {
         var matrixBlob = storageBucket.get("matrix.csv");
@@ -162,7 +172,6 @@ public class Roster implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
 
         tblSchedule.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-
         sharedModules = getSharedModules();
         var temp = Doctor.getAllDoctors();
         doctors = new ArrayList<>();
@@ -390,6 +399,12 @@ public class Roster implements Initializable {
     private JSONObject surgeonLeaveJson;
 
     public void generateSchedule() {
+
+        imgLogo.setImage(new Image(getClass().getClassLoader().getResourceAsStream("nelanest.png")));
+        String dr = "Schedule from: %s to %s".formatted(dateRange.get().getKey().toString().split("T")[0],
+                dateRange.get().getValue().toString().split("T")[0]);
+        txtDateRange.setText(dr);
+
         maxWeeks = 0;
 
         tblSchedule.getColumns().clear();
@@ -610,6 +625,7 @@ public class Roster implements Initializable {
         }
 
         tblSchedule.refresh();
+        tblSchedule.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
     }
 
@@ -699,18 +715,14 @@ public class Roster implements Initializable {
     }
 
     public void mnuPrintClick(ActionEvent actionEvent) {
-        tblSchedule.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        PrinterJob job = PrinterJob.createPrinterJob(Printer.getDefaultPrinter());
-        if (job.showPrintDialog(primaryStage.getOwner())) {
-            job.printPage(Printer.getDefaultPrinter()
-                    .createPageLayout(Paper.A4, PageOrientation.LANDSCAPE, Printer.MarginType.DEFAULT),
-                    tblSchedule);
-            job.endJob();
+        try {
+            PrintUtils.printNode(grdPrint);
+        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            Logger.getInstance().exception(e);
+            AlertFactory.createAlert(Alert.AlertType.ERROR, e.getMessage()).show();
         }
-        primaryStage.setResizable(true);
-        primaryStage.setHeight(primaryStage.getMaxHeight());
-        primaryStage.setWidth(primaryStage.getMaxWidth());
-        tblSchedule.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
     }
+
+
 
 }
