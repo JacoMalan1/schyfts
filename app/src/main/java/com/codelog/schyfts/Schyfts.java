@@ -82,7 +82,7 @@ public class Schyfts extends Application {
         Stage stage = new Stage();
         stage.initStyle(StageStyle.DECORATED);
         stage.setTitle(title);
-        stage.getIcons().add()
+        stage.getIcons().add(Reference.ICON);
         stage.setScene(scene);
         stage.initOwner(currentStage);
 
