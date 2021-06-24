@@ -5,6 +5,10 @@ import com.codelog.schyfts.api.LeaveData;
 import com.codelog.schyfts.api.UserContext;
 import com.codelog.clogg.Logger;
 import com.codelog.schyfts.util.Request;
+import com.sun.javafx.collections.ObservableListWrapper;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -37,6 +41,7 @@ public class Leave implements Initializable {
     DatePicker dpEndDate;
 
     List<LeaveData> leaveList;
+    FilteredList<LeaveData> filteredLeave;
     List<Doctor> doctors;
     private boolean submitAction;
 
@@ -76,6 +81,7 @@ public class Leave implements Initializable {
                         LocalDate.parse(leaveData.getString("start").split("T")[0]),
                         LocalDate.parse(leaveData.getString("end").split("T")[0])
                 );
+
                 leaveList.add(entry);
 
             }
@@ -94,7 +100,8 @@ public class Leave implements Initializable {
             cmbDoctor.getItems().add(String.format("%s, %s", d.getSurname(), d.getName()));
         }
 
-        tblLeave.getItems().addAll(leaveList);
+        filteredLeave = new FilteredList<>(FXCollections.observableArrayList(leaveList), p -> true);
+        tblLeave.setItems(filteredLeave);
         btnSubmit.setDisable(false);
 
     }
@@ -145,6 +152,16 @@ public class Leave implements Initializable {
                 );
                 dpStartDate.setValue(newSelection.getStartDate());
                 dpEndDate.setValue(newSelection.getEndDate());
+            }
+        });
+
+        cmbDoctor.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null && submitAction) {
+                filteredLeave.setPredicate(ld -> newSelection.equals("%s, %s".formatted(
+                        ld.getDoctorSurname(), ld.getDoctorName()
+                )));
+            } else {
+                filteredLeave.setPredicate(ld -> true);
             }
         });
     }
@@ -215,7 +232,7 @@ public class Leave implements Initializable {
         }
 
         if (!submitAction) {
-            return;
+            // TODO: Add leave edit code.
         } else {
 
             try {
