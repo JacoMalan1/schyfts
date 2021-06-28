@@ -173,7 +173,7 @@ public class Roster implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        tblSchedule.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+//        tblSchedule.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         sharedModules = getSharedModules();
         var temp = Doctor.getAllDoctors();
         doctors = new ArrayList<>();
@@ -499,6 +499,19 @@ public class Roster implements Initializable {
             items.add(item);
         }
 
+        tblSchedule.setEditable(true);
+        tblSchedule.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+        tblSchedule.getColumns().forEach(clm -> clm.getColumns().forEach(subClm -> {
+            Logger.getInstance().debug("Modifying column %s".formatted(subClm.getText()));
+            subClm.setEditable(true);
+            subClm.setSortable(false);
+            subClm.setOnEditCommit(event -> {
+                var rowIdx = event.getTablePosition().getRow();
+                tblSchedule.getItems().get(rowIdx).replace(subClm.getText(), event.getNewValue());
+                tblSchedule.refresh();
+            });
+        }));
+        tblSchedule.refresh();
         tblSchedule.getItems().addAll(items);
 
         var surgeonLeaveJson = SurgeonLeave.refresh();
@@ -576,7 +589,7 @@ public class Roster implements Initializable {
 
             Map<String, String>[] dayitems = new Map[] { tblSchedule.getItems().get(intervalLength * 2),
                                                         tblSchedule.getItems().get(intervalLength * 2 + 1) };
-            var freeSlots = RosterUtils.getFreeSlots(dayitems);
+//            var freeSlots = RosterUtils.getFreeSlots(dayitems);
             for (var leave : doctorLeave) {
 
                 if ((i.isAfter(leave.getStartDate()) || i.isEqual(leave.getStartDate())
@@ -587,6 +600,11 @@ public class Roster implements Initializable {
 
                     var keys = dayitems[0].keySet();
                     for (var key : keys) {
+
+                        if (dayitems[0].get(key) == null || dayitems[1].get(key) == null) {
+                            continue;
+                        }
+
                         var value = dayitems[0].get(key);
                         var nextDayValue = dayitems[1].get(key);
 
@@ -608,20 +626,7 @@ public class Roster implements Initializable {
             i = i.plusDays(1);
         }
 
-        tblSchedule.setEditable(true);
-        tblSchedule.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-        tblSchedule.getColumns().forEach(clm -> clm.getColumns().forEach(subClm -> {
-            subClm.setSortable(false);
-            subClm.setEditable(true);
-            subClm.setOnEditCommit(event -> {
-                var rowIdx = event.getTablePosition().getRow();
-                tblSchedule.getItems().get(rowIdx).replace(subClm.getText(), event.getNewValue());
-                tblSchedule.refresh();
-            });
-        }));
-        tblSchedule.refresh();
-
-    }
+    } // generateSchedule
 
     private void createColumn(TableColumn<Map, String> clm, String key) {
         clm.setCellValueFactory(new MapValueFactory<>(key));
@@ -629,6 +634,7 @@ public class Roster implements Initializable {
         clm.setOnEditCommit(event -> {
             var rowIdx = event.getTablePosition().getRow();
             tblSchedule.getItems().get(rowIdx).replace(key, event.getNewValue());
+            tblSchedule.refresh();
         });
         tblSchedule.getColumns().add(clm);
     }
