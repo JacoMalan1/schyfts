@@ -11,6 +11,7 @@ import com.codelog.schyfts.util.PrintUtils;
 import com.codelog.schyfts.util.RosterUtils;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
+import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -32,6 +33,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import javafx.util.converter.DefaultStringConverter;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -43,7 +45,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.*;
 
-@SuppressWarnings({"rawtypes"})
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class Roster implements Initializable {
 
     private static final int MODULES = 16;
@@ -251,6 +253,7 @@ public class Roster implements Initializable {
 
             tblRoster.getColumns().add(clm);
         }
+
         updateItems();
 
         Thread thread = new Thread(this::refresh);
@@ -400,7 +403,9 @@ public class Roster implements Initializable {
 
     public void generateSchedule() {
 
-        imgLogo.setImage(new Image(getClass().getClassLoader().getResourceAsStream("nelanest.png")));
+        imgLogo.setImage(Reference.LOGO);
+        if (dateRange.isEmpty())
+            return;
         String dr = "Schedule from: %s to %s".formatted(dateRange.get().getKey().toString().split("T")[0],
                 dateRange.get().getValue().toString().split("T")[0]);
         txtDateRange.setText(dr);
@@ -409,7 +414,6 @@ public class Roster implements Initializable {
 
         tblSchedule.getColumns().clear();
         tblSchedule.getItems().clear();
-        assert !dateRange.isPresent();
 
         keys = new ArrayList<>();
         tabSchedule.setDisable(false);
@@ -417,7 +421,6 @@ public class Roster implements Initializable {
         tblSchedule.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         tblSchedule.getItems().clear();
         tblSchedule.getColumns().clear();
-        tblSchedule.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         tblSchedule.setEditable(true);
 
         constructModuleMap();
@@ -436,9 +439,10 @@ public class Roster implements Initializable {
                 clmDoctor.setCellValueFactory(new MapValueFactory<>(doctorNames.get(doctor)));
                 keys.add(doctorNames.get(doctor));
                 clmDoctor.setEditable(true);
-                clmDoctor.setCellFactory(param -> new TableCell<>() {
+                clmDoctor.setCellFactory(param -> new TextFieldTableCell<>(new DefaultStringConverter()) {
+
                     @Override
-                    protected void updateItem(String item, boolean empty) {
+                    public void updateItem(String item, boolean empty) {
                         super.updateItem(item, empty);
                         if (item == null || empty) {
                             setText("");
@@ -448,6 +452,11 @@ public class Roster implements Initializable {
                             text.setStyle("-fx-text-alignment:left;");
                             text.wrappingWidthProperty().bind(getTableColumn().widthProperty());
                             setGraphic(text);
+
+                            if (item.contains("#")) {
+                                setStyle("-fx-background-color:green;");
+
+                            }
                         }
                     }
                 });
@@ -469,14 +478,14 @@ public class Roster implements Initializable {
 
         for (int i = 0; i < 3; i++) {
             TableColumn<Map, String> clmCall = new TableColumn<>("Call " + (i + 1));
-            clmCall.setCellValueFactory(new MapValueFactory<>("call" + (i + 1)));
-            tblSchedule.getColumns().add(clmCall);
+            var key = "call" + (i + 1);
+            createColumn(clmCall, key);
         }
 
         for (int i = 0; i < 5; i++) {
             TableColumn<Map, String> clmLoc = new TableColumn<>("Loc " + (i + 1));
-            clmLoc.setCellValueFactory(new MapValueFactory<>("loc" + (i + 1)));
-            tblSchedule.getColumns().add(clmLoc);
+            var key = "loc" + (i + 1);
+            createColumn(clmLoc, key);
         }
 
         ObservableList<Map<String, String>> items = FXCollections.observableArrayList();
@@ -589,31 +598,6 @@ public class Roster implements Initializable {
                             if (!dayitems[1].get(key).contains("#"))
                                 dayitems[1].put(key, "#" + dayitems[1].get(key));
 
-//                            for (int k = 0; k < freeSlots.size(); k++) {
-//                                var slot = freeSlots.get(k);
-//                                var item = slot.getKey();
-//                                var kv = slot.getValue();
-//
-//                                if (item.equals(dayitems[0])) {
-//
-//                                    if (!(value.contains("OFF") && nextDayValue.contains("OFF")) && !value.contains("#")
-//                                            && !nextDayValue.contains("#") && !value.contains("$")
-//                                            && !nextDayValue.contains("$")) {
-//                                        dayitems[0].put(kv.getKey(), "$" + value.replace("#", ""));
-//                                        dayitems[0].put(key, "#");
-//
-//                                        dayitems[1].put(kv.getKey(), "$" + nextDayValue);
-//                                        dayitems[1].put(key, "#");
-//
-//                                        freeSlots.remove(slot);
-//                                        freeSlots = RosterUtils.getFreeSlots(dayitems);
-//                                        break;
-//                                    }
-//
-//                                }
-//
-//                            }
-
                         }
 
                     }
@@ -624,12 +608,30 @@ public class Roster implements Initializable {
             i = i.plusDays(1);
         }
 
+        tblSchedule.setEditable(true);
+        tblSchedule.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+        tblSchedule.getColumns().forEach(clm -> clm.getColumns().forEach(subClm -> {
+            subClm.setSortable(false);
+            subClm.setEditable(true);
+            subClm.setOnEditCommit(event -> {
+                var rowIdx = event.getTablePosition().getRow();
+                tblSchedule.getItems().get(rowIdx).replace(subClm.getText(), event.getNewValue());
+                tblSchedule.refresh();
+            });
+        }));
         tblSchedule.refresh();
-        tblSchedule.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
     }
 
-
+    private void createColumn(TableColumn<Map, String> clm, String key) {
+        clm.setCellValueFactory(new MapValueFactory<>(key));
+        clm.setCellFactory(TextFieldTableCell.forTableColumn());
+        clm.setOnEditCommit(event -> {
+            var rowIdx = event.getTablePosition().getRow();
+            tblSchedule.getItems().get(rowIdx).replace(key, event.getNewValue());
+        });
+        tblSchedule.getColumns().add(clm);
+    }
 
     @SuppressWarnings("unchecked")
     public void mnuSaveSchedule(ActionEvent actionEvent) {
@@ -722,7 +724,4 @@ public class Roster implements Initializable {
             AlertFactory.createAlert(Alert.AlertType.ERROR, e.getMessage()).show();
         }
     }
-
-
-
 }

@@ -5,7 +5,6 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -37,7 +36,7 @@ public class Schyfts extends Application {
         primaryStage.setTitle("Login");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
-        primaryStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("nelanest.ico")));
+        primaryStage.getIcons().add(Reference.ICON);
         primaryStage.show();
 
         currentStage = primaryStage;

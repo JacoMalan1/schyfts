@@ -2,7 +2,9 @@ package com.codelog.schyfts;
 
 import com.codelog.schyfts.api.UserContext;
 import com.codelog.clogg.Logger;
+import javafx.application.Application;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -11,12 +13,15 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class Menu implements Initializable {
+
+    public static Stage stage;
 
     @FXML
     public Circle indLoggedIn;
@@ -47,7 +52,6 @@ public class Menu implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
         try {
             Image img = new Image(Objects.requireNonNull(
                     getClass().getClassLoader().getResourceAsStream("nelanest.png")

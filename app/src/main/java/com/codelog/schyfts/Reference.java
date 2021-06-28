@@ -13,4 +13,8 @@ public class Reference {
     public static final LocalDate GENESIS_TIME = LocalDate.parse("2021-04-05");
     public static final Image ICON = new Image(
             Objects.requireNonNull(Reference.class.getClassLoader().getResourceAsStream("nelanest.ico")));
+
+    public static final Image LOGO = new Image(
+            Objects.requireNonNull(Reference.class.getClassLoader().getResourceAsStream("nelanest.png"))
+    );
 }
