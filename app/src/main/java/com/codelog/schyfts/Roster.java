@@ -573,7 +573,7 @@ public class Roster implements Initializable {
             }
 
             for (var item : itemsToRemove) {
-                item.getKey().put(item.getValue(), "OFF");
+                item.getKey().put(item.getValue(), item.getKey().get(item.getValue()) +" OFF");
             }
 
             tblSchedule.refresh();
