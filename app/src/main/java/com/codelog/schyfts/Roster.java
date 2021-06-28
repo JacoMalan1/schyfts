@@ -8,10 +8,8 @@ import com.codelog.schyfts.api.LeaveData;
 import com.codelog.schyfts.google.StorageContext;
 import com.codelog.schyfts.util.AlertFactory;
 import com.codelog.schyfts.util.PrintUtils;
-import com.codelog.schyfts.util.RosterUtils;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
-import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -23,7 +21,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -568,35 +565,36 @@ public class Roster implements Initializable {
                             }
                         }
 
-                    }
-                }
-            }
+                    } // if
+                } // for
+            } // for
 
-            for (var item : itemsToRemove) {
-                item.getKey().put(item.getValue(), item.getKey().get(item.getValue()) +" OFF");
-            }
+            for (var item : itemsToRemove)
+                if (!item.getValue().contains("OFF"))
+                    item.getKey().put(item.getValue(), item.getKey().get(item.getValue()) + " OFF");
 
             tblSchedule.refresh();
             var rosterPeriod = dateRange.get().getKey().until(dateRange.get().getValue());
             maxWeeks = rosterPeriod.getMonths() * 4 + Math.round(rosterPeriod.getDays() / 7.0f);
-
-        }
+        } // for
 
         var i = currentStart;
 
         while (i.isBefore(currentEnd) || i.isEqual(currentEnd)) {
             var intervalLength = currentStart.until(i).getDays();
 
-            Map<String, String>[] dayitems = new Map[] { tblSchedule.getItems().get(intervalLength * 2),
-                                                        tblSchedule.getItems().get(intervalLength * 2 + 1) };
-//            var freeSlots = RosterUtils.getFreeSlots(dayitems);
-            for (var leave : doctorLeave) {
+            Map<String, String>[] dayitems = new Map[] {
+                    tblSchedule.getItems().get(intervalLength * 2),
+                    tblSchedule.getItems().get(intervalLength * 2 + 1)
+            };
 
-                if ((i.isAfter(leave.getStartDate()) || i.isEqual(leave.getStartDate())
-                    ) && (i.isBefore(leave.getEndDate()) || i.isEqual(leave.getEndDate()))) {
+            for (var leave : doctorLeave) {
+                if ((i.isAfter(leave.getStartDate()) || i.isEqual(leave.getStartDate()))
+                        && (i.isBefore(leave.getEndDate()) || i.isEqual(leave.getEndDate()))) {
 
                     // OVERLAP!!!
-                    // If this code executes, it means that we have a doctor with leave on the day of month 'i'.
+                    // If this code executes, it means that we have a
+                    // doctor with leave on the day of month 'i'.
 
                     var keys = dayitems[0].keySet();
                     for (var key : keys) {
@@ -610,23 +608,20 @@ public class Roster implements Initializable {
 
                         if ("%s %s".formatted(leave.getDoctorSurname(), leave.getDoctorName()).equals(key)) {
 
-                            if (!dayitems[0].get(key).contains("#"))
-                                dayitems[0].put(key, "#" + dayitems[0].get(key));
+                            if (!value.contains("#"))
+                                dayitems[0].put(key, "#" + value);
 
-                            if (!dayitems[1].get(key).contains("#"))
-                                dayitems[1].put(key, "#" + dayitems[1].get(key));
+                            if (!nextDayValue.contains("#"))
+                                dayitems[1].put(key, "#" + nextDayValue);
 
-                        }
-
-                    }
-                }
-
-            }
-
+                        } // if
+                    } // for
+                } // if
+            } // for
             i = i.plusDays(1);
-        }
+        } // while
 
-    } // generateSchedule
+    } // function
 
     private void createColumn(TableColumn<Map, String> clm, String key) {
         clm.setCellValueFactory(new MapValueFactory<>(key));
