@@ -64,6 +64,7 @@ public class Roster implements Initializable {
     private Map<Integer, Integer> sharedModules;
     private int scheduleOffset;
     private static Optional<Pair<LocalDate, LocalDate>> dateRange;
+    private Map<Integer, List> scheduleState;
 
     @FXML
     private ImageView imgLogo;
@@ -170,7 +171,6 @@ public class Roster implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-//        tblSchedule.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         sharedModules = getSharedModules();
         var temp = Doctor.getAllDoctors();
         doctors = new ArrayList<>();
@@ -255,6 +255,8 @@ public class Roster implements Initializable {
 
         Thread thread = new Thread(this::refresh);
         thread.start();
+
+        scheduleState = new HashMap<>();
 
     }
 
@@ -532,11 +534,9 @@ public class Roster implements Initializable {
         for (var item : tblSchedule.getItems()) {
             for (int i = 0; i < 3; i++) {
                 item.put("call" + (i + 1), "");
-                keys.add("call" + (i + 1));
             }
             for (int i = 0; i < 5; i++) {
                 item.put("loc" + (i + 1), "");
-                keys.add("loc" + (i + 1));
             }
         }
 
@@ -570,7 +570,7 @@ public class Roster implements Initializable {
             } // for
 
             for (var item : itemsToRemove)
-                if (!item.getValue().contains("OFF"))
+                if (!((String)item.getKey().get(item.getValue())).contains("OFF"))
                     item.getKey().put(item.getValue(), item.getKey().get(item.getValue()) + " OFF");
 
             tblSchedule.refresh();
@@ -624,6 +624,7 @@ public class Roster implements Initializable {
     } // function
 
     private void createColumn(TableColumn<Map, String> clm, String key) {
+        keys.add(key);
         clm.setCellValueFactory(new MapValueFactory<>(key));
         clm.setCellFactory(TextFieldTableCell.forTableColumn());
         clm.setOnEditCommit(event -> {
@@ -705,7 +706,12 @@ public class Roster implements Initializable {
         if (scheduleOffset <= 0)
             return;
         scheduleOffset--;
-        generateSchedule();
+        if (scheduleState.containsKey(scheduleOffset)) {
+            tblSchedule.getItems().clear();
+            tblSchedule.getItems().addAll(scheduleState.get(scheduleOffset));
+        } else {
+            generateSchedule();
+        }
     }
 
     public void btnNextClick(ActionEvent actionEvent) {
@@ -713,8 +719,17 @@ public class Roster implements Initializable {
             return;
         if (scheduleOffset >= maxWeeks)
             return;
+
+        var state = new ArrayList<>(tblSchedule.getItems());
+        scheduleState.put(scheduleOffset, state);
+
         scheduleOffset++;
-        generateSchedule();
+        if (scheduleState.containsKey(scheduleOffset)) {
+            tblSchedule.getItems().clear();
+            tblSchedule.getItems().addAll(scheduleState.get(scheduleOffset));
+        } else {
+            generateSchedule();
+        }
     }
 
     public void mnuPrintClick(ActionEvent actionEvent) {
