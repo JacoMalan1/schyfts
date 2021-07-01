@@ -22,7 +22,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -47,15 +46,11 @@ public class Roster implements Initializable {
 
     private static final int MODULES = 16;
     private static final int LISTS = 14;
-    private static final int CALLS = 3;
-    private static final int LOCI = 4;
-    private static final int STATIC_COLUMNS = 1;
 
     private String[][] matrix;
     private static List<String> lists;
     public static Stage primaryStage;
     private List<Doctor> doctors;
-    private static final int STATIC_MODULES = 3;
     private Map<Integer, List<Integer>> moduleMap;
     private Map<Integer, String> doctorNames;
     private List<String> keys;
@@ -73,15 +68,9 @@ public class Roster implements Initializable {
     @FXML
     private TableView<Map> tblSchedule;
     @FXML
-    private Tab tabMatrix;
-    @FXML
     private Tab tabSchedule;
     @FXML
-    private BorderPane bdpRoot;
-    @FXML
     private TextArea txtDateRange;
-    @FXML
-    private TextArea txtAddress;
     @FXML
     private GridPane grdPrint;
 
