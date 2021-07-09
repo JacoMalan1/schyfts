@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.8'
+    id 'net.researchgate.release' version '2.8.1'
 }
 
 group 'com.codelog'
@@ -46,4 +47,17 @@ task fatJar(type: Jar) {
 
 application {
     mainClassName = "com.codelog.schyfts.Main"
+}
+
+task generateJava(type: Copy) {
+    def templateContext = [version: project.version]
+    inputs.properties(templateContext)
+    from 'src/template/java' into "$buildDir/generated/java" expand templateContext
+}
+
+sourceSets.main.java.srcDir "$buildDir/generated/java"
+compileJava.dependsOn generateJava
+
+release {
+    snapshotSuffix = 'ALPHA'
 }

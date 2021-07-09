@@ -17,4 +17,7 @@ public class Reference {
     public static final Image LOGO = new Image(
             Objects.requireNonNull(Reference.class.getClassLoader().getResourceAsStream("nelanest.png"))
     );
+
+    public static final String VERSION_STRING = "${version}";
+
 }
