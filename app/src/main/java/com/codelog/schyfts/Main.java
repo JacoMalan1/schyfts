@@ -52,6 +52,7 @@ public class Main {
             Logger.getInstance().exception(e);
         }
         Logger.getInstance().info("System information: \n" + builder.toString());
+        Logger.getInstance().info("Schyfts version: " + Reference.VERSION_STRING);
 
         try {
             Schyfts.main(args);

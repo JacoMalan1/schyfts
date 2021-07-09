@@ -3,7 +3,6 @@ package com.codelog.schyfts.google;
 import com.codelog.clogg.Logger;
 import com.codelog.schyfts.Reference;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
