@@ -25,4 +25,4 @@ jobs:
     - name: Fetch submodules
       run: git submodule init && git submodule update
     - name: Build with Gradle
-      run: ln -sf clogg/lib lib && ./gradlew build
+      run: ln -sf clogg/lib lib && ./gradlew --no-daemon build
