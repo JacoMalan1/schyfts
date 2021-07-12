@@ -2,6 +2,7 @@ package com.codelog.schyfts;
 
 import com.codelog.schyfts.api.User;
 import com.codelog.clogg.Logger;
+import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -10,6 +11,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Screen;
+import javafx.stage.Stage;
+import javafx.stage.Window;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -34,7 +37,6 @@ public class Login implements Initializable {
     }
 
     public void btnLoginClick(ActionEvent actionEvent) {
-
         String uname = txtUname.getText();
         String pword = pwdPass.getText();
 
@@ -53,8 +55,7 @@ public class Login implements Initializable {
             alert.show();
         } else {
             Logger.getInstance().debug(String.format("Login successfull (token: %s)", user.getToken().substring(0, 4)));
-            Schyfts.createStage("menu.fxml", "Menu", false)
-                    .setOnCloseRequest(e -> System.exit(0));
+            Schyfts.changeScene("menu.fxml", "Menu");
         }
 
     }

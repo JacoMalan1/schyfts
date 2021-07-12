@@ -38,7 +38,7 @@
                             </Menu>
                               <Menu mnemonicParsing="false" text="Generate">
                                 <items>
-                                  <MenuItem fx:id="mnuGenerateSchedule" mnemonicParsing="false" onAction="#mnuGenerateSchedule" text="Schedule" />
+                                  <MenuItem fx:id="mnuGenerateSchedule" mnemonicParsing="false" onAction="#mnuGenerateScheduleClick" text="Schedule" />
                                 </items>
                               </Menu>
                           </menus>
@@ -87,7 +87,7 @@
                                 <menus>
                                   <Menu mnemonicParsing="false" text="File">
                                     <items>
-                                      <MenuItem fx:id="mnuSaveSchedule" mnemonicParsing="false" onAction="#mnuSaveSchedule" text="Save As">
+                                      <MenuItem fx:id="mnuSaveScheduleClick" mnemonicParsing="false" onAction="#mnuSaveScheduleClick" text="Save As">
                                              <accelerator>
                                                 <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                                              </accelerator>

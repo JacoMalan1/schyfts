@@ -7,6 +7,7 @@ import com.codelog.schyfts.api.Doctor;
 import com.codelog.schyfts.api.LeaveData;
 import com.codelog.schyfts.google.StorageContext;
 import com.codelog.schyfts.util.AlertFactory;
+import com.codelog.schyfts.util.LocalDateFormatter;
 import com.codelog.schyfts.util.PrintUtils;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
@@ -38,6 +39,7 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -74,7 +76,7 @@ public class Roster implements Initializable {
     @FXML
     private GridPane grdPrint;
 
-    public void loadRoster() {
+    private void loadRoster() {
         var matrixBlob = storageBucket.get("matrix.csv");
         if (matrixBlob != null) {
             try {
@@ -113,7 +115,7 @@ public class Roster implements Initializable {
         }
     }
 
-    public void refresh() {
+    private void refresh() {
 
         doctorNames = new HashMap<>();
 
@@ -143,7 +145,7 @@ public class Roster implements Initializable {
 
     }
 
-    public void updateItems() {
+    private void updateItems() {
         tblRoster.getItems().clear();
         ObservableList<Map<String, Object>> items = FXCollections.observableArrayList();
         for (int j = 0; j < LISTS; j++) {
@@ -159,7 +161,6 @@ public class Roster implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
         sharedModules = getSharedModules();
         var temp = Doctor.getAllDoctors();
         doctors = new ArrayList<>();
@@ -306,7 +307,7 @@ public class Roster implements Initializable {
 
     }
 
-    public static Map<Integer, Integer> getSharedModules() {
+    private static Map<Integer, Integer> getSharedModules() {
         Map<Integer, Integer> sharedModules = new HashMap<>();
 
         try {
@@ -327,7 +328,7 @@ public class Roster implements Initializable {
         return sharedModules;
     }
 
-    public void constructModuleMap() {
+    private void constructModuleMap() {
         moduleMap = new HashMap<>();
         assert dateRange.isPresent();
         var period = dateRange.get().getKey().toEpochDay() - Reference.GENESIS_TIME.toEpochDay();
@@ -355,7 +356,7 @@ public class Roster implements Initializable {
         }
     }
 
-    public void mnuGenerateSchedule(ActionEvent actionEvent) {
+    public void mnuGenerateScheduleClick(ActionEvent actionEvent) {
         tblSchedule.getStylesheets().add("styles.css");
         Dialog<Pair<LocalDate, LocalDate>> dialog = new Dialog<>();
         dialog.setTitle("Schedule options");
@@ -389,7 +390,19 @@ public class Roster implements Initializable {
     private int maxWeeks;
     private JSONObject surgeonLeaveJson;
 
-    public void generateSchedule() {
+    private void generateSchedule() {
+
+        var prgBar = new ProgressBar();
+        var prgText = new Label();
+        var vbox = new VBox(prgBar, prgText);
+        vbox.setMinWidth(100);
+        vbox.setMinHeight(50);
+        Stage prgStage = new Stage();
+        Scene prgScene = new Scene(vbox);
+        prgStage.setScene(prgScene);
+        prgStage.setTitle("Progress");
+        prgStage.initModality(Modality.APPLICATION_MODAL);
+        prgStage.show();
 
         imgLogo.setImage(Reference.LOGO);
         if (dateRange.isEmpty())
@@ -411,13 +424,16 @@ public class Roster implements Initializable {
         tblSchedule.getColumns().clear();
         tblSchedule.setEditable(true);
 
+        prgText.setText("Constructing module map...");
         constructModuleMap();
+        prgBar.setProgress(0.15);
 
         TableColumn<Map, String> clmList = new TableColumn<>("List");
         clmList.setCellValueFactory(new MapValueFactory<>("List"));
         tblSchedule.getColumns().add(clmList);
         keys.add("List");
 
+        prgText.setText("Constructing table columns...");
         for (var module : moduleMap.keySet()) {
 
             TableColumn<Map, String> clm = new TableColumn<>(String.valueOf(module));
@@ -441,10 +457,8 @@ public class Roster implements Initializable {
                             text.wrappingWidthProperty().bind(getTableColumn().widthProperty());
                             setGraphic(text);
 
-                            if (item.contains("#")) {
+                            if (item.contains("#"))
                                 setStyle("-fx-background-color:green;");
-
-                            }
                         }
                     }
                 });
@@ -452,7 +466,6 @@ public class Roster implements Initializable {
             }
 
             tblSchedule.getColumns().add(clm);
-
         }
 
         TableColumn<Map, String> clmStatic = new TableColumn<>("Static");
@@ -497,12 +510,17 @@ public class Roster implements Initializable {
                 var rowIdx = event.getTablePosition().getRow();
                 tblSchedule.getItems().get(rowIdx).replace(subClm.getText(), event.getNewValue());
                 tblSchedule.refresh();
+                updateScheduleState();
             });
         }));
+
         tblSchedule.refresh();
         tblSchedule.getItems().addAll(items);
 
+        prgBar.setProgress(0.45);
+        prgText.setText("Refreshing surgeon leave...");
         var surgeonLeaveJson = SurgeonLeave.refresh();
+        prgBar.setProgress(0.65);
 
         LocalDate currentStart = dateRange.get().getKey().plusWeeks(scheduleOffset);
         LocalDate currentEnd = currentStart.plusDays(5);
@@ -529,6 +547,7 @@ public class Roster implements Initializable {
             }
         }
 
+        prgText.setText("Removing surgeons on leave...");
         for (var leave : surgeonLeaveJson) {
             // name, surname, start, end
             String name = leave.getString("name");
@@ -543,8 +562,8 @@ public class Roster implements Initializable {
                     if (value != null) {
 
                         var fullName = (name.equals(" ")) ? surname : "%s %s".formatted(name, surname);
-                        var valueFullName = (
-                                value.startsWith("LH") || value.startsWith("DH")) ? value.substring(3) :
+                        var valueFullName =
+                                (value.startsWith("LH") || value.startsWith("DH")) ? value.substring(3) :
                                 value.startsWith("DCL") ? value.substring(4) : value;
                         if (value.contains(surname)) {
                             var itemDate = currentStart.plusDays((tblSchedule.getItems().indexOf(item) / 2));
@@ -566,9 +585,11 @@ public class Roster implements Initializable {
             var rosterPeriod = dateRange.get().getKey().until(dateRange.get().getValue());
             maxWeeks = rosterPeriod.getMonths() * 4 + Math.round(rosterPeriod.getDays() / 7.0f);
         } // for
+        prgBar.setProgress(0.85);
 
         var i = currentStart;
 
+        prgText.setText("Marking doctor leave...");
         while (i.isBefore(currentEnd) || i.isEqual(currentEnd)) {
             var intervalLength = currentStart.until(i).getDays();
 
@@ -610,7 +631,24 @@ public class Roster implements Initializable {
             i = i.plusDays(1);
         } // while
 
+        // WARNING: This code must execute after all changes
+        // to the schedule have been made.
+        // This is MISSION CRITICAL
+        prgBar.setProgress(0.1);
+        prgText.setText("DONE");
+        updateScheduleState();
+
+        prgStage.close();
+
     } // function
+
+    private void updateScheduleState() {
+        var itemsCopy = new ArrayList(tblSchedule.getItems());
+        if (scheduleState.containsKey(scheduleOffset))
+            scheduleState.replace(scheduleOffset, itemsCopy);
+        else
+            scheduleState.put(scheduleOffset, itemsCopy);
+    }
 
     private void createColumn(TableColumn<Map, String> clm, String key) {
         keys.add(key);
@@ -620,12 +658,18 @@ public class Roster implements Initializable {
             var rowIdx = event.getTablePosition().getRow();
             tblSchedule.getItems().get(rowIdx).replace(key, event.getNewValue());
             tblSchedule.refresh();
+            updateScheduleState();
         });
         tblSchedule.getColumns().add(clm);
     }
 
     @SuppressWarnings("unchecked")
-    public void mnuSaveSchedule(ActionEvent actionEvent) {
+    public void mnuSaveScheduleClick() {
+
+        if (dateRange.isEmpty()) {
+            Logger.getInstance().error("Expected dateRange to be populated, but got empty!");
+            return;
+        }
 
         FileChooser chooser = new FileChooser();
         FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
@@ -641,6 +685,8 @@ public class Roster implements Initializable {
         stage.setScene(scene);
 
         File file = chooser.showSaveDialog(stage);
+        if (file == null)
+            return;
         List<String> lines = new ArrayList<>();
 
         for (Map<String, String> item : tblSchedule.getItems()) {
@@ -672,8 +718,16 @@ public class Roster implements Initializable {
 
         builder.deleteCharAt(builder.length() - 1);
         builder2.deleteCharAt(builder.length() - 1);
-        lines.add(0, builder.toString());
-        lines.add(1, builder2.toString());
+
+        // First line (Current date): $dd/MM/yyyy$
+        var dateNow = dateRange.get().getKey().plusWeeks(scheduleOffset);
+        lines.add(0, "$%s$".formatted(LocalDateFormatter.format(dateNow)));
+
+        // Second line: header
+        lines.add(1, builder.toString());
+
+        // Content: Schedule
+        lines.add(2, builder2.toString());
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
@@ -689,12 +743,24 @@ public class Roster implements Initializable {
         }
     }
 
-    public void btnPrevClick(ActionEvent actionEvent) {
+    private void advanceSchedule() {
+        advanceSchedule(false);
+    }
+
+    private void advanceSchedule(boolean reverse) {
         if (tabSchedule.isDisabled())
             return;
-        if (scheduleOffset <= 0)
-            return;
-        scheduleOffset--;
+
+        if (reverse) {
+            if (scheduleOffset <= 0)
+                return;
+            scheduleOffset--;
+        } else {
+            if (scheduleOffset >= maxWeeks)
+                return;
+            scheduleOffset++;
+        }
+
         if (scheduleState.containsKey(scheduleOffset)) {
             tblSchedule.getItems().clear();
             tblSchedule.getItems().addAll(scheduleState.get(scheduleOffset));
@@ -703,30 +769,15 @@ public class Roster implements Initializable {
         }
     }
 
-    public void btnNextClick(ActionEvent actionEvent) {
-        if (tabSchedule.isDisabled())
-            return;
-        if (scheduleOffset >= maxWeeks)
-            return;
-
-        var state = new ArrayList<>(tblSchedule.getItems());
-        scheduleState.put(scheduleOffset, state);
-
-        scheduleOffset++;
-        if (scheduleState.containsKey(scheduleOffset)) {
-            tblSchedule.getItems().clear();
-            tblSchedule.getItems().addAll(scheduleState.get(scheduleOffset));
-        } else {
-            generateSchedule();
-        }
+    public void btnPrevClick() {
+        advanceSchedule(true);
     }
 
-    public void mnuPrintClick(ActionEvent actionEvent) {
-        try {
-            PrintUtils.printNode(grdPrint);
-        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-            Logger.getInstance().exception(e);
-            AlertFactory.createAlert(Alert.AlertType.ERROR, e.getMessage()).show();
-        }
+    public void btnNextClick() {
+        advanceSchedule();
+    }
+
+    public void mnuPrintClick() {
+
     }
 }
