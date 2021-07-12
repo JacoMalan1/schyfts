@@ -22,5 +22,7 @@ jobs:
         java-version: 15
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+    - name: Fetch submodules
+      run: git submodule init && git submodule update
     - name: Build with Gradle
-      run: echo $(ls clogg) && ln -sf clogg/lib lib && ./gradlew build
+      run: ln -sf clogg/lib lib && ./gradlew build
