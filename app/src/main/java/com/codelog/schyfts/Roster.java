@@ -810,8 +810,9 @@ public class Roster implements Initializable {
             ));
 
             Logger.getInstance().debug(uri.toASCIIString());
-            Runtime rt = Runtime.getRuntime();
-            rt.exec("/usr/bin/google-chrome --new-tab " + uri.toASCIIString());
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(uri);
+            }
         } catch (IOException | URISyntaxException e) {
             Logger.getInstance().exception(e);
             AlertFactory.showAlert(Alert.AlertType.ERROR, e.getMessage());
