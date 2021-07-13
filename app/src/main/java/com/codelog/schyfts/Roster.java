@@ -9,6 +9,7 @@ import com.codelog.schyfts.google.StorageContext;
 import com.codelog.schyfts.util.AlertFactory;
 import com.codelog.schyfts.util.LocalDateFormatter;
 import com.codelog.schyfts.util.PrintUtils;
+import com.codelog.schyfts.util.RandomUtil;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import javafx.collections.FXCollections;
@@ -20,6 +21,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
@@ -33,15 +37,18 @@ import javafx.util.Pair;
 import javafx.util.converter.DefaultStringConverter;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
+import java.net.*;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.List;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class Roster implements Initializable {
@@ -687,6 +694,11 @@ public class Roster implements Initializable {
         File file = chooser.showSaveDialog(stage);
         if (file == null)
             return;
+
+        saveSchedule(file);
+    }
+
+    private void saveSchedule(File file) {
         List<String> lines = new ArrayList<>();
 
         for (Map<String, String> item : tblSchedule.getItems()) {
@@ -721,13 +733,12 @@ public class Roster implements Initializable {
 
         // First line (Current date): $dd/MM/yyyy$
         var dateNow = dateRange.get().getKey().plusWeeks(scheduleOffset);
-        lines.add(0, "$%s$".formatted(LocalDateFormatter.format(dateNow)));
 
-        // Second line: header
-        lines.add(1, builder.toString());
+        // First line: header
+        lines.add(0, builder.toString());
 
         // Content: Schedule
-        lines.add(2, builder2.toString());
+        lines.add(1, builder2.toString());
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
@@ -778,6 +789,32 @@ public class Roster implements Initializable {
     }
 
     public void mnuPrintClick() {
+        String characterSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        String fileName = RandomUtil.getRandomString(16, characterSet);
 
+        var file = new File(fileName + ".scsv");
+        saveSchedule(file);
+        try {
+
+            storageBucket.create("render_tmp/%s".formatted(fileName + ".scsv"), new FileInputStream(file));
+
+            var startDate = LocalDateFormatter.format(dateRange.get().getKey());
+            var endDate = LocalDateFormatter.format(dateRange.get().getValue());
+
+            var weekStart = LocalDateFormatter.format(dateRange.get().getKey().plusWeeks(scheduleOffset));
+
+            var uri = new URI(Reference.API_URL + "printOut/%s/%s/%s".formatted(
+                    fileName,
+                    URLEncoder.encode("%s - %s".formatted(startDate, endDate), StandardCharsets.US_ASCII),
+                    URLEncoder.encode(weekStart, StandardCharsets.US_ASCII)
+            ));
+
+            Logger.getInstance().debug(uri.toASCIIString());
+            Runtime rt = Runtime.getRuntime();
+            rt.exec("/usr/bin/google-chrome --new-tab " + uri.toASCIIString());
+        } catch (IOException | URISyntaxException e) {
+            Logger.getInstance().exception(e);
+            AlertFactory.showAlert(Alert.AlertType.ERROR, e.getMessage());
+        }
     }
 }
