@@ -43,6 +43,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -54,7 +55,7 @@ import java.util.List;
 public class Roster implements Initializable {
 
     private static final int MODULES = 16;
-    private static final int LISTS = 14;
+    private static final int LISTS = 12;
 
     private String[][] matrix;
     private static List<String> lists;
@@ -109,8 +110,7 @@ public class Roster implements Initializable {
             Logger.getInstance().exception(e);
         }
 
-        for (int i = 0; i < lines.size(); i++) {
-
+        for (int i = 0; i < lines.size() && i < LISTS; i++) {
             String[] split = lines.get(i).split(",");
             for (int j = 0; j < split.length; j++) {
                 if (split[j].equals("\"\"") || split[j].equals("null"))
@@ -118,7 +118,6 @@ public class Roster implements Initializable {
                 else
                     matrix[j][i] = split[j];
             }
-
         }
     }
 
@@ -223,10 +222,8 @@ public class Roster implements Initializable {
         lists.add("Thu PM");
         lists.add("Fri AM");
         lists.add("Fri PM");
-        lists.add("Sat AM");
-        lists.add("Sat PM");
-        lists.add("Sun AM");
-        lists.add("Sun PM");
+        lists.add("Sat");
+        lists.add("Sun");
 
         TableColumn<Map, String> clmLabel = new TableColumn<>("List");
         clmLabel.setCellValueFactory(new MapValueFactory<>("list"));
@@ -534,12 +531,15 @@ public class Roster implements Initializable {
         var day = currentStart.getDayOfMonth();
 
         int idx = 0;
-        for (var j = 0; j < lists.size(); j++) {
+        for (var j = 0; j < lists.size(); j++)
             if (lists.get(j).contains("\n"))
                 lists.set(j, lists.get(j).substring(lists.get(j).indexOf('\n') + 1));
+        for (var j = 0; j < lists.size() - 2; j++) {
             lists.set(j, currentStart.plusDays(idx).getDayOfMonth() + "\n" + lists.get(j));
             idx += j % 2;
         }
+        lists.set(lists.size() - 2, currentStart.plusDays(6).getDayOfMonth() + "\n" + lists.get(lists.size() - 2));
+        lists.set(lists.size() - 1, currentStart.plusDays(7).getDayOfMonth() + "\n" + lists.get(lists.size() - 1));
 
         for (var i = 0; i < tblSchedule.getItems().size(); i++) {
             tblSchedule.getItems().get(i).put("List", lists.get(i));
@@ -792,10 +792,11 @@ public class Roster implements Initializable {
         String characterSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         String fileName = RandomUtil.getRandomString(16, characterSet);
 
-        var file = new File(fileName + ".scsv");
+        var tmpDir = System.getProperty("java.io.tmpdir");
+        var file = new File(tmpDir + FileSystems.getDefault().getSeparator() + fileName + ".scsv");
         saveSchedule(file);
-        try {
 
+        try {
             storageBucket.create("render_tmp/%s".formatted(fileName + ".scsv"), new FileInputStream(file));
 
             var startDate = LocalDateFormatter.format(dateRange.get().getKey());
@@ -810,8 +811,11 @@ public class Roster implements Initializable {
             ));
 
             Logger.getInstance().debug(uri.toASCIIString());
-            if (Desktop.isDesktopSupported()) {
+            if (Desktop.isDesktopSupported() && !System.getProperty("os.name").equals("Linux")) {
                 Desktop.getDesktop().browse(uri);
+            } else {
+                Runtime rt = Runtime.getRuntime();
+                rt.exec("xdg-open " + uri);
             }
         } catch (IOException | URISyntaxException e) {
             Logger.getInstance().exception(e);
