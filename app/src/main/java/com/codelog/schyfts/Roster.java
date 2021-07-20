@@ -396,6 +396,8 @@ public class Roster implements Initializable {
 
     private void generateSchedule() {
 
+        tblSchedule.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
         var prgBar = new ProgressBar();
         var prgText = new Label();
         var vbox = new VBox(prgBar, prgText);
