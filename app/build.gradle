@@ -46,7 +46,7 @@ task fatJar(type: Jar) {
 }
 
 application {
-    mainClassName = "com.codelog.schyfts.Main"
+    getMainClass().set("com.codelog.schyfts.Main")
 }
 
 task generateJava(type: Copy) {
