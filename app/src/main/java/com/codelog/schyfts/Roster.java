@@ -476,7 +476,7 @@ public class Roster implements Initializable {
 
         TableColumn<Map, String> clmStatic = new TableColumn<>("Static");
         TableColumn<Map, String> joubert = new TableColumn<>("Joubert L");
-        keys.add("Joubert L");
+        keys.add("static");
         joubert.setCellFactory(TextFieldTableCell.forTableColumn());
         joubert.setCellValueFactory(new MapValueFactory<>("static"));
         joubert.setEditable(true);
@@ -639,6 +639,15 @@ public class Roster implements Initializable {
             } // for
             i = i.plusDays(1);
         } // while
+
+        for (var item : tblSchedule.getItems()) {
+            if (((String)item.get("List")).contains("Tue")) {
+                item.put("static", "Eksteen");
+            }
+            if (((String)item.get("List")).contains("Fri")) {
+                item.put("static", "Kuhn");
+            }
+        }
 
         // WARNING: This code must execute after all changes
         // to the schedule have been made.
@@ -819,7 +828,7 @@ public class Roster implements Initializable {
                 Runtime rt = Runtime.getRuntime();
                 rt.exec("xdg-open " + uri);
             }
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | NullPointerException e) {
             Logger.getInstance().exception(e);
             AlertFactory.showAlert(Alert.AlertType.ERROR, e.getMessage());
         }

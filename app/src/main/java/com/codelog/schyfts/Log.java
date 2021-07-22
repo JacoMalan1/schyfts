@@ -1,23 +1,26 @@
 package com.codelog.schyfts;
 
-import com.codelog.clogg.LogEvent;
-import com.codelog.clogg.LogEventBuffer;
-import com.codelog.clogg.LogEventSubscriber;
-import com.codelog.clogg.Logger;
+import com.codelog.clogg.*;
+import com.codelog.schyfts.google.StorageContext;
+import com.codelog.schyfts.util.AlertFactory;
 import com.codelog.schyfts.util.HashUtil;
+import com.codelog.schyfts.util.RandomUtil;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.TextArea;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.FileSystems;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Random;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class Log implements LogEventSubscriber, Initializable {
 
@@ -43,6 +46,7 @@ public class Log implements LogEventSubscriber, Initializable {
     public void logEvent(LogEvent logEvent) {
         if (!initialized)
             return;
+
         for (int i = 0; i <= logBuffer.getUnhandledEvents().size(); i++) {
             var event = logBuffer.popEvent();
             writeLogEvent(event);
@@ -57,24 +61,31 @@ public class Log implements LogEventSubscriber, Initializable {
     }
 
     public void btnSendClick(ActionEvent actionEvent) {
-        Random r = new Random();
-        byte[] rBytes = new byte[256];
-        r.nextBytes(rBytes);
-        String message = txtLog.getText() + Arrays.toString(rBytes);
-        String digest = "";
+        var timestamp = Date.from(Instant.now());
+        var formatter = new SimpleDateFormat("yyyyMMdd");
+        var fileName = formatter.format(timestamp);
+        fileName += "_" + RandomUtil.getRandomString(3, "1234567890");
+        fileName += ".log";
+
+        var tmpDir = System.getProperty("java.io.tmpdir");
+        var tmpFile = new File(tmpDir + FileSystems.getDefault().getSeparator() + fileName);
         try {
-            digest = HashUtil.hashString("SHA-256", message);
-        } catch (NoSuchAlgorithmException e) {
+            var fileWriter = new FileWriter(tmpFile);
+            LogWriter logWriter = new LogWriter(fileWriter);
+            for (var event : logBuffer.getPastEvents())
+                logWriter.logEvent(event);
+
+            var bucket = StorageContext.getInstance().getStorage().get("nelanest-roster");
+            bucket.create("logs/%s".formatted(fileName), new FileInputStream(tmpFile));
+        } catch (IOException e) {
+            Logger.getInstance().error(e.getMessage());
             Logger.getInstance().exception(e);
-            return;
         }
 
-        var timestamp = Date.from(Instant.now());
-        digest += timestamp.toString();
-        Logger.getInstance().debug("Uploading log file (filename: %s)".formatted(digest));
-
+        Logger.getInstance().debug("Uploaded log file (filename: %s)".formatted(fileName));
     }
 
     public void btnSaveClick(ActionEvent actionEvent) {
+        AlertFactory.showAlert(Alert.AlertType.ERROR, "This feature hasn't been implemented yet!");
     }
 }

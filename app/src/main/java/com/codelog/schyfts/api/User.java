@@ -47,6 +47,10 @@ public class User {
                 return true;
             }
         } catch (IOException | APIException e) {
+            if (e instanceof APIException) {
+                Logger.getInstance().debug("API Response: " +
+                        ((APIException) e).getApiResponse().toString(4) + "\n");
+            }
             Logger.getInstance().exception(e);
             return false;
         }

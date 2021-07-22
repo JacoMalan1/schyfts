@@ -6,6 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -53,6 +54,14 @@ public class Schyfts extends Application {
             Parent root = FXMLLoader.load(file);
             Scene scene = new Scene(root);
             currentStage.setScene(scene);
+            var x = Screen.getPrimary().getBounds().getMaxX() - Screen.getPrimary().getBounds().getMinX();
+            x /= 2;
+            x += Screen.getPrimary().getBounds().getMinX();
+            var y = Screen.getPrimary().getBounds().getMaxY() - Screen.getPrimary().getBounds().getMinY();
+            y /= 2;
+            y += Screen.getPrimary().getBounds().getMinY();
+            currentStage.setX(x - scene.getWidth() / 2);
+            currentStage.setY(y - scene.getHeight() / 2);
         } catch (IOException e) {
             Logger.getInstance().exception(e);
         }

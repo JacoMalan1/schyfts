@@ -13,4 +13,8 @@ public class APIException extends Exception {
     public String getMessage() {
         return String.format("%s\nAPI response:\n%s", super.getMessage(), apiResponse.toString(4));
     }
+
+    public JSONObject getApiResponse() {
+        return apiResponse;
+    }
 }

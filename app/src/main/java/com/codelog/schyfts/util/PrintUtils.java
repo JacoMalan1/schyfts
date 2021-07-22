@@ -10,9 +10,9 @@ public class PrintUtils {
     public static void printNode(final Node node) throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         Printer printer = Printer.getDefaultPrinter();
         PageLayout pageLayout
-                = printer.createPageLayout(Paper.A4, PageOrientation.LANDSCAPE, Printer.MarginType.HARDWARE_MINIMUM);
+                = printer.createPageLayout(Paper.A4, PageOrientation.LANDSCAPE, Printer.MarginType.DEFAULT);
         PrinterAttributes attr = printer.getPrinterAttributes();
-        PrinterJob job = PrinterJob.createPrinterJob();
+        PrinterJob job = PrinterJob.createPrinterJob(printer);
         double scaleX
                 = pageLayout.getPrintableWidth() / node.getBoundsInParent().getWidth();
         double scaleY

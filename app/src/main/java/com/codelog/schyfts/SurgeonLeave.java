@@ -4,7 +4,11 @@ import com.codelog.clogg.Logger;
 import com.codelog.schyfts.api.APIException;
 import com.codelog.schyfts.api.APIRequest;
 import com.codelog.schyfts.util.AlertFactory;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -37,13 +41,18 @@ public class SurgeonLeave implements Initializable {
     Button btnSubmit;
 
     private JSONObject leaveJson;
+    private ObservableList<Map<String, String>> leaveList;
+    private FilteredList<Map<String, String>> filteredLeave;
 
     private boolean action;
     public static SurgeonLeave instance;
 
+
     @Override
     @SuppressWarnings("unchecked")
     public void initialize(URL location, ResourceBundle resources) {
+
+        leaveList = FXCollections.observableList(new ArrayList<>());
 
         if (prgStatus != null && tblLeave != null) {
 
@@ -70,6 +79,20 @@ public class SurgeonLeave implements Initializable {
             instance = this;
 
             AlertFactory.showAndWait("Refreshing Leave");
+
+            txtSurname.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (!oldValue.equals(newValue) && !newValue.equals("")) {
+                    filteredLeave = new FilteredList<>(leaveList);
+                    filteredLeave.setPredicate(p -> p.get("surname").contains(newValue));
+                    tblLeave.getItems().clear();
+                    tblLeave.getItems().addAll(filteredLeave);
+                } else {
+                    filteredLeave = new FilteredList<>(leaveList);
+                    filteredLeave.setPredicate(p -> true);
+                    tblLeave.getItems().clear();
+                    tblLeave.getItems().addAll(filteredLeave);
+                }
+            });
         }
 
         startRefresh();
@@ -129,6 +152,8 @@ public class SurgeonLeave implements Initializable {
             if (instance.tblLeave != null) {
                 instance.tblLeave.getItems().clear();
                 instance.tblLeave.getItems().addAll(items);
+                instance.leaveList.clear();
+                instance.leaveList.addAll(items);
             }
         } catch (IOException | APIException e) {
             Logger.getInstance().error("Couldn't refresh leave");
@@ -139,14 +164,6 @@ public class SurgeonLeave implements Initializable {
             instance.prgStatus.setProgress(1);
 
         return leaveList;
-    }
-
-    public void mnuAddLeave(ActionEvent actionEvent) {
-        btnSubmit.setText("Add");
-        action = true;
-    }
-
-    public void mnuShowPastLeave(ActionEvent actionEvent) {
     }
 
     public void mnuDelete(ActionEvent actionEvent) {
