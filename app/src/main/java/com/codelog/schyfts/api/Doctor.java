@@ -21,31 +21,25 @@ public class Doctor {
         List<Doctor> results = new ArrayList<>();
 
         try {
-            Request req = new Request(Reference.API_URL + "getAllDoctors");
-            JSONObject body = new JSONObject();
-            body.put("token", UserContext.getInstance().getCurrentUser().getToken());
-            req.setBody(body);
-            req.sendRequest();
-            JSONObject res = req.getResponse();
+            APIRequest req = new APIRequest("getAllDoctors", true);
+            var res = req.send();
 
-            if (res.get("status").equals("ok")) {
-                JSONArray jsonResults = res.getJSONArray("results");
-                for (int i = 0; i < jsonResults.length(); i++) {
+            JSONArray jsonResults = res.getJSONArray("results");
+            for (int i = 0; i < jsonResults.length(); i++) {
 
-                    JSONObject result = jsonResults.getJSONObject(i);
-                    results.add(new Doctor(
-                            result.getInt("id"),
-                            result.getString("shortcode"),
-                            result.getString("cellphone"),
-                            result.getString("name"),
-                            result.getString("surname")
-                    ));
+                JSONObject result = jsonResults.getJSONObject(i);
+                results.add(new Doctor(
+                        result.getInt("id"),
+                        result.getString("shortcode"),
+                        result.getString("cellphone"),
+                        result.getString("name"),
+                        result.getString("surname")
+                ));
 
-                }
             }
-        } catch (IOException e) {
+        } catch (IOException | APIException e) {
             e.printStackTrace(System.err);
-            return null;
+            return new ArrayList<>();
         }
 
         return results;

@@ -11,16 +11,16 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codelog.schyfts.Menu">
+
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="661.0" prefWidth="801.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codelog.schyfts.Menu">
   <columnConstraints>
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
   </columnConstraints>
   <rowConstraints>
-    <RowConstraints maxHeight="228.0" minHeight="10.0" prefHeight="209.0" vgrow="SOMETIMES" />
-    <RowConstraints maxHeight="534.0" minHeight="10.0" prefHeight="265.0" vgrow="SOMETIMES" />
-    <RowConstraints maxHeight="266.0" minHeight="10.0" prefHeight="126.0" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="259.0" minHeight="10.0" prefHeight="146.0" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="534.0" minHeight="10.0" prefHeight="454.0" vgrow="SOMETIMES" />
   </rowConstraints>
    <children>
       <Circle fx:id="indLoggedIn" fill="RED" radius="12.0" stroke="BLACK" strokeType="INSIDE" GridPane.columnIndex="2" GridPane.halignment="CENTER" />
@@ -33,6 +33,14 @@
                <font>
                   <Font size="26.0" />
                </font>
+            </Button>
+            <Button fx:id="btnCalls" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnCallsClick" prefHeight="60.0" text="Calls">
+               <font>
+                  <Font size="26.0" />
+               </font>
+               <VBox.margin>
+                  <Insets top="5.0" />
+               </VBox.margin>
             </Button>
             <Button fx:id="btnLeaveCalendar" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnLeaveCalendarClick" prefHeight="60.0" text="Leave">
                <VBox.margin>
@@ -77,6 +85,6 @@
          </children>
       </VBox>
       <Label fx:id="lblUsername" text="Logged Out" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
-      <ImageView fx:id="imgLogo" fitHeight="200.0" fitWidth="400.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
+      <ImageView fx:id="imgLogo" fitHeight="200.0" fitWidth="350.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
    </children>
 </GridPane>

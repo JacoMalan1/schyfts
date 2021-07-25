@@ -67,7 +67,7 @@ public class Schyfts extends Application {
         }
     }
 
-    public static Stage createStage(String resource, String title, boolean setModal) {
+    public static Stage createStage(String resource, String title, boolean setModal, boolean setOwner) {
         var file = Schyfts.class.getClassLoader().getResource(resource);
         if (file == null) {
             Logger.getInstance().error(String.format("Couldn't load resource (%s)", resource));
@@ -92,7 +92,10 @@ public class Schyfts extends Application {
         stage.setTitle("%s - Schyfts %s".formatted(title, Reference.VERSION_STRING));
         stage.getIcons().add(Reference.ICON);
         stage.setScene(scene);
-        stage.initOwner(currentStage);
+
+        if (setOwner) {
+            stage.initOwner(Schyfts.currentStage);
+        }
 
         if (setModal)
             stage.initModality(Modality.WINDOW_MODAL);
@@ -105,7 +108,7 @@ public class Schyfts extends Application {
     }
 
     public static Stage createStage(String resource, String title) {
-        return createStage(resource, title, true);
+        return createStage(resource, title, true, true);
     }
 
     public static void changeScene(String resource, String title) {

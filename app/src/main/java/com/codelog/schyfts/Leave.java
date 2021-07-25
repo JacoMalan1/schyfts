@@ -97,11 +97,6 @@ public class Leave implements Initializable {
         for (var d : doctors) {
             cmbDoctor.getItems().add(String.format("%s, %s", d.getSurname(), d.getName()));
         }
-
-        filteredLeave = new FilteredList<>(FXCollections.observableArrayList(leaveList), p -> true);
-        tblLeave.setItems(filteredLeave);
-        btnSubmit.setDisable(false);
-
     }
 
     @SuppressWarnings("unchecked")
@@ -154,6 +149,9 @@ public class Leave implements Initializable {
         });
 
         cmbDoctor.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            filteredLeave = new FilteredList<>(FXCollections.observableArrayList(leaveList), p -> true);
+            tblLeave.setItems(filteredLeave);
+            btnSubmit.setDisable(false);
             if (newSelection != null && submitAction) {
                 filteredLeave.setPredicate(ld -> newSelection.equals("%s, %s".formatted(
                         ld.getDoctorSurname(), ld.getDoctorName()

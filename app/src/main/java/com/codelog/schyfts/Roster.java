@@ -1,10 +1,7 @@
 package com.codelog.schyfts;
 
 import com.codelog.clogg.Logger;
-import com.codelog.schyfts.api.APIException;
-import com.codelog.schyfts.api.APIRequest;
-import com.codelog.schyfts.api.Doctor;
-import com.codelog.schyfts.api.LeaveData;
+import com.codelog.schyfts.api.*;
 import com.codelog.schyfts.google.StorageContext;
 import com.codelog.schyfts.util.AlertFactory;
 import com.codelog.schyfts.util.LocalDateFormatter;
@@ -70,6 +67,7 @@ public class Roster implements Initializable {
     private int scheduleOffset;
     private static Optional<Pair<LocalDate, LocalDate>> dateRange;
     private Map<Integer, List> scheduleState;
+    private List<CallData> callData;
 
     @FXML
     private ImageView imgLogo;
@@ -124,12 +122,11 @@ public class Roster implements Initializable {
     private void refresh() {
 
         doctorNames = new HashMap<>();
+        callData = CallData.getAllCallData();
 
         var doctors = Doctor.getAllDoctors();
-        if (doctors == null) {
-            Logger.getInstance().error("Couldn't retrieve doctors");
-            return;
-        }
+        if (doctors.size() == 0)
+            Logger.getInstance().warn("Zero doctors found. Is the database empty?");
 
         for (var d : doctors)
             doctorNames.put(d.getId(), String.format("%s %s", d.getSurname(), d.getName()));
@@ -251,7 +248,6 @@ public class Roster implements Initializable {
         thread.start();
 
         scheduleState = new HashMap<>();
-
     }
 
     public void mnuSave(ActionEvent actionEvent) {
@@ -599,6 +595,7 @@ public class Roster implements Initializable {
         var i = currentStart;
 
         prgText.setText("Marking doctor leave...");
+        List<CallData> addedData = new ArrayList<>();
         while (i.isBefore(currentEnd) || i.isEqual(currentEnd)) {
             var intervalLength = currentStart.until(i).getDays();
 
@@ -606,6 +603,22 @@ public class Roster implements Initializable {
                     tblSchedule.getItems().get(intervalLength * 2),
                     tblSchedule.getItems().get(intervalLength * 2 + 1)
             };
+
+            // Add registered call data
+            for (var cd : callData) {
+                if (i.isEqual(cd.getDate()) && cd.getState().contains("ON")) {
+                    var keys = dayitems[0].keySet();
+                    for (var key : keys) {
+                        if (key.startsWith("call") && !addedData.contains(cd)
+                            && (dayitems[0].get(key).equals("OFF") || dayitems[0].get(key).equals(""))) {
+
+                            dayitems[0].put(key, cd.getSurname() + ", " + cd.getName());
+                            dayitems[1].put(key, cd.getSurname() + ", " + cd.getName());
+                            addedData.add(cd);
+                        }
+                    }
+                }
+            }
 
             for (var leave : doctorLeave) {
                 if ((i.isAfter(leave.getStartDate()) || i.isEqual(leave.getStartDate()))

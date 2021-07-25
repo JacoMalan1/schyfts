@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="479.0" prefWidth="667.0" xmlns="http://javafx.com/javafx/15.0.1   " xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codelog.schyfts.CallSchedule">
+   <top>
+      <HBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
+         <children>
+            <MenuBar HBox.hgrow="ALWAYS">
+              <menus>
+                <Menu mnemonicParsing="false" text="File">
+                  <items>
+                    <MenuItem fx:id="mnuAdd" mnemonicParsing="false" text="Add" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Edit">
+                  <items>
+                    <MenuItem fx:id="mnuDelete" disable="false" onAction="#mnuDeleteClick" mnemonicParsing="false" text="Delete" />
+                  </items>
+                </Menu>
+              </menus>
+            </MenuBar>
+            <ProgressBar fx:id="prgStatus" prefWidth="200.0" progress="0.0" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+   </top>
+   <center>
+      <TableView fx:id="tblCalls" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+   </center>
+   <bottom>
+      <HBox prefHeight="102.0" prefWidth="667.0" BorderPane.alignment="CENTER">
+         <children>
+            <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0" HBox.hgrow="ALWAYS">
+               <children>
+                  <Label text="Doctor" />
+                  <Label text="Date" />
+                  <Label text="Call" />
+               </children>
+            </VBox>
+            <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="5.0" HBox.hgrow="ALWAYS">
+               <children>
+                  <ChoiceBox fx:id="cmbDoctor" prefWidth="200.0" />
+                  <DatePicker fx:id="dpDate" />
+                  <ChoiceBox fx:id="cmbCall" prefWidth="200.0" />
+               </children>
+            </VBox>
+            <VBox alignment="CENTER" prefHeight="102.0" prefWidth="141.0">
+               <children>
+                  <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#btnSubmitClick" text="Submit" />
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </bottom>
+</BorderPane>

@@ -26,7 +26,7 @@ public class Login implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        var stage = Schyfts.createStage("logs.fxml", "Log", false);
+        var stage = Schyfts.createStage("logs.fxml", "Log", false, false);
         assert stage != null;
 
         var x = Screen.getPrimary().getBounds().getMinX();
@@ -55,10 +55,10 @@ public class Login implements Initializable {
             alert.show();
         } else {
             Logger.getInstance().debug(String.format("Login successfull (token: %s)", user.getToken().substring(0, 4)));
-            Schyfts.changeScene("menu.fxml", "Menu");
-            Schyfts.currentStage.setWidth(800);
-            Schyfts.currentStage.setHeight(600);
+            var newStage = Schyfts.createStage("menu.fxml", "Menu", false, false);
+            var oldStage = Schyfts.currentStage;
+            Schyfts.currentStage = newStage;
+            oldStage.close();
         }
-
     }
 }

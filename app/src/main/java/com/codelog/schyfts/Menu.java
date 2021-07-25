@@ -38,6 +38,7 @@ public class Menu implements Initializable {
 
     public void btnRosterClick(ActionEvent actionEvent) {
         Roster.primaryStage = Schyfts.createStage("roster.fxml", "Roster");
+        Roster.primaryStage.setMaximized(true);
     }
 
     public void btnLeaveCalendarClick(ActionEvent actionEvent) {
@@ -88,5 +89,10 @@ public class Menu implements Initializable {
     public void btnSurgeonLeaveClick(ActionEvent actionEvent) {
         if (UserContext.getInstance().getCurrentUser() != null)
             Schyfts.createStage("surgeons_leave.fxml", "Surgeon Leave");
+    }
+
+    public void btnCallsClick(ActionEvent actionEvent) {
+        if (UserContext.getInstance().getCurrentUser() != null)
+            Schyfts.createStage("callschedule.fxml", "Calls");
     }
 }
