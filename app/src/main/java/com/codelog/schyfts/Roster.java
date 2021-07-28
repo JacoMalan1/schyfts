@@ -809,7 +809,7 @@ public class Roster implements Initializable {
             tblSchedule.getItems().clear();
             tblSchedule.getItems().addAll(scheduleState.get(scheduleOffset).getValue());
             tblSchedule.getColumns().clear();
-            tblSchedule.getColumns().addAll(scheduleState.get(scheduleOffset).getValue());
+            tblSchedule.getColumns().addAll(scheduleState.get(scheduleOffset).getKey());
         } else {
             generateSchedule();
         }
