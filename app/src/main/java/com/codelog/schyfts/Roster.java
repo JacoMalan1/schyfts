@@ -44,6 +44,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
@@ -66,7 +67,7 @@ public class Roster implements Initializable {
     private Map<Integer, Integer> sharedModules;
     private int scheduleOffset;
     private static Optional<Pair<LocalDate, LocalDate>> dateRange;
-    private Map<Integer, List> scheduleState;
+    private Map<Integer, Pair<List, List>> scheduleState;
     private List<CallData> callData;
 
     @FXML
@@ -525,7 +526,7 @@ public class Roster implements Initializable {
         prgBar.setProgress(0.65);
 
         LocalDate currentStart = dateRange.get().getKey().plusWeeks(scheduleOffset);
-        LocalDate currentEnd = currentStart.plusDays(5);
+        LocalDate currentEnd = currentStart.plusDays(6);
         var day = currentStart.getDayOfMonth();
 
         int idx = 0;
@@ -536,8 +537,8 @@ public class Roster implements Initializable {
             lists.set(j, currentStart.plusDays(idx).getDayOfMonth() + "\n" + lists.get(j));
             idx += j % 2;
         }
-        lists.set(lists.size() - 2, currentStart.plusDays(6).getDayOfMonth() + "\n" + lists.get(lists.size() - 2));
-        lists.set(lists.size() - 1, currentStart.plusDays(7).getDayOfMonth() + "\n" + lists.get(lists.size() - 1));
+        lists.set(lists.size() - 2, currentStart.plusDays(5).getDayOfMonth() + "\n" + lists.get(lists.size() - 2));
+        lists.set(lists.size() - 1, currentStart.plusDays(6).getDayOfMonth() + "\n" + lists.get(lists.size() - 1));
 
         for (var i = 0; i < tblSchedule.getItems().size(); i++) {
             tblSchedule.getItems().get(i).put("List", lists.get(i));
@@ -599,10 +600,18 @@ public class Roster implements Initializable {
         while (i.isBefore(currentEnd) || i.isEqual(currentEnd)) {
             var intervalLength = currentStart.until(i).getDays();
 
-            Map<String, String>[] dayitems = new Map[] {
-                    tblSchedule.getItems().get(intervalLength * 2),
-                    tblSchedule.getItems().get(intervalLength * 2 + 1)
-            };
+            Map<String, String>[] dayitems = new Map[2];
+
+            if (i.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+                dayitems[0] = tblSchedule.getItems().get(tblSchedule.getItems().size() - 1);
+                dayitems[1] = dayitems[0];
+            } else if (i.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
+                dayitems[0] = tblSchedule.getItems().get(tblSchedule.getItems().size() - 2);
+                dayitems[1] = dayitems[0];
+            } else {
+                dayitems[0] = tblSchedule.getItems().get(intervalLength * 2);
+                dayitems[1] = tblSchedule.getItems().get(intervalLength * 2 + 1);
+            }
 
             // Add registered call data
             for (var cd : callData) {
@@ -631,8 +640,11 @@ public class Roster implements Initializable {
                     var keys = dayitems[0].keySet();
                     for (var key : keys) {
 
-                        if (dayitems[0].get(key) == null || dayitems[1].get(key) == null) {
-                            continue;
+                        if (dayitems[0].get(key) == null) {
+                            dayitems[0].replace(key, "");
+                        }
+                        if (dayitems[1].get(key) == null) {
+                            dayitems[1].replace(key, "");
                         }
 
                         var value = dayitems[0].get(key);
@@ -675,10 +687,11 @@ public class Roster implements Initializable {
 
     private void updateScheduleState() {
         var itemsCopy = new ArrayList(tblSchedule.getItems());
+        var columnsCopy = new ArrayList(tblSchedule.getColumns());
         if (scheduleState.containsKey(scheduleOffset))
-            scheduleState.replace(scheduleOffset, itemsCopy);
+            scheduleState.replace(scheduleOffset, new Pair<>(columnsCopy, itemsCopy));
         else
-            scheduleState.put(scheduleOffset, itemsCopy);
+            scheduleState.put(scheduleOffset, new Pair<>(columnsCopy, itemsCopy));
     }
 
     private void createColumn(TableColumn<Map, String> clm, String key) {
@@ -737,7 +750,6 @@ public class Roster implements Initializable {
             }
             builder.deleteCharAt(builder.length() - 1);
             lines.add(builder.toString());
-
         }
 
         StringBuilder builder = new StringBuilder();
@@ -754,9 +766,6 @@ public class Roster implements Initializable {
 
         builder.deleteCharAt(builder.length() - 1);
         builder2.deleteCharAt(builder.length() - 1);
-
-        // First line (Current date): $dd/MM/yyyy$
-        var dateNow = dateRange.get().getKey().plusWeeks(scheduleOffset);
 
         // First line: header
         lines.add(0, builder.toString());
@@ -798,7 +807,9 @@ public class Roster implements Initializable {
 
         if (scheduleState.containsKey(scheduleOffset)) {
             tblSchedule.getItems().clear();
-            tblSchedule.getItems().addAll(scheduleState.get(scheduleOffset));
+            tblSchedule.getItems().addAll(scheduleState.get(scheduleOffset).getValue());
+            tblSchedule.getColumns().clear();
+            tblSchedule.getColumns().addAll(scheduleState.get(scheduleOffset).getValue());
         } else {
             generateSchedule();
         }
