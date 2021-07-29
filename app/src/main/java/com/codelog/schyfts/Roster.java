@@ -3,10 +3,7 @@ package com.codelog.schyfts;
 import com.codelog.clogg.Logger;
 import com.codelog.schyfts.api.*;
 import com.codelog.schyfts.google.StorageContext;
-import com.codelog.schyfts.util.AlertFactory;
-import com.codelog.schyfts.util.LocalDateFormatter;
-import com.codelog.schyfts.util.PrintUtils;
-import com.codelog.schyfts.util.RandomUtil;
+import com.codelog.schyfts.util.*;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import javafx.collections.FXCollections;
@@ -398,13 +395,13 @@ public class Roster implements Initializable {
         var prgBar = new ProgressBar();
         var prgText = new Label();
         var vbox = new VBox(prgBar, prgText);
-        vbox.setMinWidth(100);
-        vbox.setMinHeight(50);
+        vbox.setMinWidth(600);
+        vbox.setMinHeight(300);
         Stage prgStage = new Stage();
         Scene prgScene = new Scene(vbox);
         prgStage.setScene(prgScene);
         prgStage.setTitle("Progress");
-        prgStage.initModality(Modality.APPLICATION_MODAL);
+        prgStage.initModality(Modality.WINDOW_MODAL);
         prgStage.show();
 
         imgLogo.setImage(Reference.LOGO);
@@ -476,6 +473,12 @@ public class Roster implements Initializable {
         keys.add("static");
         joubert.setCellFactory(TextFieldTableCell.forTableColumn());
         joubert.setCellValueFactory(new MapValueFactory<>("static"));
+        joubert.setOnEditCommit( event -> {
+            var rowIdx = event.getTablePosition().getRow();
+            tblSchedule.getItems().get(rowIdx).replace("static", event.getNewValue());
+            tblSchedule.refresh();
+            updateScheduleState();
+        });
         joubert.setEditable(true);
         clmStatic.getColumns().add(joubert);
         tblSchedule.getColumns().add(clmStatic);
@@ -621,8 +624,8 @@ public class Roster implements Initializable {
                         if (key.startsWith("call") && !addedData.contains(cd)
                             && (dayitems[0].get(key).equals("OFF") || dayitems[0].get(key).equals(""))) {
 
-                            dayitems[0].put(key, cd.getSurname() + ", " + cd.getName());
-                            dayitems[1].put(key, cd.getSurname() + ", " + cd.getName());
+                            dayitems[0].put(key, cd.getSurname() + " " + cd.getName());
+                            dayitems[1].put(key, cd.getSurname() + " " + cd.getName());
                             addedData.add(cd);
                         }
                     }
@@ -728,11 +731,61 @@ public class Roster implements Initializable {
         stage.setTitle("Save as");
         stage.setScene(scene);
 
-        File file = chooser.showSaveDialog(stage);
-        if (file == null)
-            return;
+//        File file = chooser.showSaveDialog(stage);
+        var fileName = "schedule_%d.scsv".formatted(scheduleOffset);
+
+        File file = new File(fileName);
+        if (file.exists()) {
+            var result = file.delete();
+            if (!result) {
+                AlertFactory.showAndWait(Alert.AlertType.ERROR, "Error: Couldn't delete old file!");
+                Logger.getInstance().error("Couldn't delete file (%s)".formatted(fileName));
+            }
+        }
 
         saveSchedule(file);
+        AlertFactory.showAlert("Schedule saved!");
+    }
+
+    private void loadSchedule() {
+        var fileName = "schedule_%d.scsv".formatted(scheduleOffset);
+        if (!Files.exists(Path.of(fileName)))
+            return;
+
+        String contents = null;
+        try {
+            contents = FileUtils.readFileToString(fileName);
+        } catch (IOException e) {
+            Logger.getInstance().exception(e);
+            AlertFactory.showAlert(Alert.AlertType.ERROR, "Couldn't load previously saved schedule!");
+            return;
+        }
+
+        String[] lines = contents.split("\n", -1);
+        var header = lines[0].split(",", -1);
+        var doctorNames = lines[1].split(",", -1);
+
+        tblSchedule.getItems().clear();
+        for (int i = 2; i < lines.length; i++) {
+            var values = lines[i].split(",", -1);
+            var item = new HashMap<String, String>();
+
+            item.put("List", values[0]);
+
+            for (var j = 1; j < values.length - 9; j++)
+                item.put(doctorNames[j], values[j]);
+
+            item.put("static", values[values.length - 9]);
+
+            for (var j = values.length - 8; j < values.length - 5; j++)
+                item.put("call" + (j - values.length + 8 + 1), values[j]);
+
+            for (var j = values.length - 5; j < values.length; j++)
+                item.put("loc" + (j - values.length + 5 + 1), values[j]);
+            tblSchedule.getItems().add(item);
+        }
+
+        updateScheduleState();
     }
 
     private void saveSchedule(File file) {
@@ -765,7 +818,7 @@ public class Roster implements Initializable {
         }
 
         builder.deleteCharAt(builder.length() - 1);
-        builder2.deleteCharAt(builder.length() - 1);
+        builder2.deleteCharAt(builder2.length() - 1);
 
         // First line: header
         lines.add(0, builder.toString());
@@ -856,5 +909,9 @@ public class Roster implements Initializable {
             Logger.getInstance().exception(e);
             AlertFactory.showAlert(Alert.AlertType.ERROR, e.getMessage());
         }
+    }
+
+    public void mnuLoadClick(ActionEvent actionEvent) {
+        loadSchedule();
     }
 }
