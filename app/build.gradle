@@ -5,6 +5,9 @@ plugins {
     id 'net.researchgate.release' version '2.8.1'
 }
 
+sourceCompatibility = 15
+targetCompatibility = 15
+
 group 'com.codelog'
 version '1.4.1'
 
@@ -39,8 +42,10 @@ task fatJar(type: Jar) {
     archiveClassifier.set("all")
     from {
         resources.collect()
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
     }
     with jar
 }
