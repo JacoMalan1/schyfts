@@ -24,19 +24,7 @@ public class Doctor {
             APIRequest req = new APIRequest("getAllDoctors", true);
             var res = req.send();
 
-            JSONArray jsonResults = res.getJSONArray("results");
-            for (int i = 0; i < jsonResults.length(); i++) {
-
-                JSONObject result = jsonResults.getJSONObject(i);
-                results.add(new Doctor(
-                        result.getInt("id"),
-                        result.getString("shortcode"),
-                        result.getString("cellphone"),
-                        result.getString("name"),
-                        result.getString("surname")
-                ));
-
-            }
+            parseResults(results, res);
         } catch (IOException | APIException e) {
             e.printStackTrace(System.err);
             return new ArrayList<>();
@@ -59,19 +47,7 @@ public class Doctor {
             JSONObject res = req.getResponse();
 
             if (res.get("status").equals("ok")) {
-                JSONArray jsonResults = res.getJSONArray("results");
-                for (int i = 0; i < jsonResults.length(); i++) {
-
-                    JSONObject result = jsonResults.getJSONObject(i);
-                    results.add(new Doctor(
-                            result.getInt("id"),
-                            result.getString("shortcode"),
-                            result.getString("cellphone"),
-                            result.getString("name"),
-                            result.getString("surname")
-                    ));
-
-                }
+                parseResults(results, res);
             }
         } catch (IOException e) {
             e.printStackTrace(System.err);
@@ -80,6 +56,22 @@ public class Doctor {
 
         return results;
 
+    }
+
+    private static void parseResults(List<Doctor> results, JSONObject res) {
+        JSONArray jsonResults = res.getJSONArray("results");
+        for (int i = 0; i < jsonResults.length(); i++) {
+
+            JSONObject result = jsonResults.getJSONObject(i);
+            results.add(new Doctor(
+                    result.getInt("id"),
+                    result.getString("shortcode"),
+                    result.getString("cellphone"),
+                    result.getString("name"),
+                    result.getString("surname")
+            ));
+
+        }
     }
 
     public Doctor(int id, String shortcode, String cellphone, String name, String surname) {

@@ -1,10 +1,8 @@
 package com.codelog.schyfts;
 
-import com.codelog.schyfts.api.UserContext;
 import com.codelog.clogg.Logger;
-import javafx.application.Application;
+import com.codelog.schyfts.api.UserContext;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -13,7 +11,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
-import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.Objects;
@@ -21,14 +18,8 @@ import java.util.ResourceBundle;
 
 public class Menu implements Initializable {
 
-    public static Stage stage;
-
     @FXML
     public Circle indLoggedIn;
-    @FXML
-    private Button btnRoster;
-    @FXML
-    private Button btnLeaveCalendar;
     @FXML
     private Button btnPatientReports;
     @FXML
@@ -37,8 +28,8 @@ public class Menu implements Initializable {
     private ImageView imgLogo;
 
     public void btnRosterClick(ActionEvent actionEvent) {
-        Roster.primaryStage = Schyfts.createStage("roster.fxml", "Roster");
-        Roster.primaryStage.setMaximized(true);
+        var stage = Schyfts.createStage("roster.fxml", "Roster");
+        stage.setMaximized(true);
     }
 
     public void btnLeaveCalendarClick(ActionEvent actionEvent) {

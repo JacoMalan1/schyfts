@@ -11,12 +11,16 @@ targetCompatibility = 15
 group 'com.codelog'
 version '1.4.1'
 
+test {
+    useJUnitPlatform()
+}
+
 repositories {
     mavenCentral()
 }
 
 javafx {
-    version = "15.0.1"
+    version = "16"
     modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.web' ]
 }
 
@@ -26,7 +30,8 @@ dependencies {
     implementation "com.google.cloud:google-cloud-storage:1.113.9"
     implementation project(":lib")
 
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
 }
 
 jar {

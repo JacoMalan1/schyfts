@@ -18,6 +18,7 @@ public class Reference {
             Objects.requireNonNull(Reference.class.getClassLoader().getResourceAsStream("nelanest.png"))
     );
 
+    public static final String MAIN_STORAGE_BUCKET = "nelanest-roster";
     public static final String VERSION_STRING = "${version}";
 
 }

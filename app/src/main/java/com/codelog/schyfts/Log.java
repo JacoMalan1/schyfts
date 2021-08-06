@@ -3,7 +3,6 @@ package com.codelog.schyfts;
 import com.codelog.clogg.*;
 import com.codelog.schyfts.google.StorageContext;
 import com.codelog.schyfts.util.AlertFactory;
-import com.codelog.schyfts.util.HashUtil;
 import com.codelog.schyfts.util.RandomUtil;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -17,10 +16,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.FileSystems;
-import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.*;
+import java.util.Date;
+import java.util.ResourceBundle;
 
 public class Log implements LogEventSubscriber, Initializable {
 
