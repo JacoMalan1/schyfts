@@ -64,7 +64,8 @@ public class Roster implements Initializable {
     private Map<Integer, Integer> sharedModules;
     private int scheduleOffset;
     private static Optional<Pair<LocalDate, LocalDate>> dateRange;
-    private Map<Integer, Pair<List, List>> scheduleState;
+    private Map<Integer, Pair<List<TableColumn<Map, ?>>, List<Map<String, String>>>> scheduleState;
+    private Map<Integer, List<String>> stateKeys;
     private List<CallData> callData;
 
     @FXML
@@ -246,6 +247,7 @@ public class Roster implements Initializable {
         thread.start();
 
         scheduleState = new HashMap<>();
+        stateKeys = new HashMap<>();
     }
 
     public void mnuSave(ActionEvent actionEvent) {
@@ -691,10 +693,14 @@ public class Roster implements Initializable {
     private void updateScheduleState() {
         var itemsCopy = new ArrayList(tblSchedule.getItems());
         var columnsCopy = new ArrayList(tblSchedule.getColumns());
-        if (scheduleState.containsKey(scheduleOffset))
+        List<String> keysCopy = new ArrayList(keys);
+        if (scheduleState.containsKey(scheduleOffset)) {
             scheduleState.replace(scheduleOffset, new Pair<>(columnsCopy, itemsCopy));
-        else
+            stateKeys.replace(scheduleOffset, keysCopy);
+        } else {
             scheduleState.put(scheduleOffset, new Pair<>(columnsCopy, itemsCopy));
+            stateKeys.put(scheduleOffset, keysCopy);
+        }
     }
 
     private void createColumn(TableColumn<Map, String> clm, String key) {
@@ -710,7 +716,6 @@ public class Roster implements Initializable {
         tblSchedule.getColumns().add(clm);
     }
 
-    @SuppressWarnings("unchecked")
     public void mnuSaveScheduleClick() {
 
         if (dateRange.isEmpty()) {
@@ -791,7 +796,7 @@ public class Roster implements Initializable {
     private void saveSchedule(File file) {
         List<String> lines = new ArrayList<>();
 
-        for (Map<String, String> item : tblSchedule.getItems()) {
+        for (Map<String, String> item : scheduleState.get(scheduleOffset).getValue()) {
 
             StringBuilder builder = new StringBuilder();
             for (var key : keys) {
@@ -863,9 +868,12 @@ public class Roster implements Initializable {
             tblSchedule.getItems().addAll(scheduleState.get(scheduleOffset).getValue());
             tblSchedule.getColumns().clear();
             tblSchedule.getColumns().addAll(scheduleState.get(scheduleOffset).getKey());
+            keys = stateKeys.get(scheduleOffset);
         } else {
+            keys = null;
             generateSchedule();
         }
+        tblSchedule.refresh();
     }
 
     public void btnPrevClick() {
