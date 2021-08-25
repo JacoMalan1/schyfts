@@ -2,7 +2,11 @@ package com.codelog.schyfts;
 
 import com.codelog.schyfts.api.User;
 import com.codelog.clogg.Logger;
+import com.codelog.schyfts.concurrency.Callback;
+import com.codelog.schyfts.concurrency.CallbackWorker;
+import com.codelog.schyfts.util.AlertFactory;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -14,15 +18,20 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ResourceBundle;
 
-public class Login implements Initializable {
+public class Login implements Initializable, Callback {
 
     @FXML
     private TextField txtUname;
     @FXML
     private PasswordField pwdPass;
+
+    private boolean result;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -34,6 +43,23 @@ public class Login implements Initializable {
 
         stage.setX(x);
         stage.setY(y);
+
+        CallbackWorker worker = new CallbackWorker(this) {
+            @Override
+            public void run() {
+                result = false;
+                try {
+                    URL url = new URL(Reference.API_URL);
+                    URLConnection connection = url.openConnection();
+                    connection.connect();
+                    result = true;
+                } catch (IOException ignored) {
+                }
+                callback();
+            }
+        };
+        Thread t = new Thread(worker);
+        t.start();
     }
 
     public void btnLoginClick(ActionEvent actionEvent) {
@@ -60,5 +86,14 @@ public class Login implements Initializable {
             Schyfts.currentStage = newStage;
             oldStage.close();
         }
+    }
+
+    @Override
+    public void callback() {
+        Platform.runLater(() -> {
+            if (!result) {
+                AlertFactory.showAlert(Alert.AlertType.ERROR, "No internet connetion!");
+            }
+        });
     }
 }
