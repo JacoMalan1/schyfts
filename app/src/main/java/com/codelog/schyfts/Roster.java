@@ -776,6 +776,8 @@ public class Roster implements Initializable {
             var item = new HashMap<String, String>();
 
             item.put("List", values[0]);
+            if (values.length <=1)
+                continue;
 
             for (var j = 1; j < values.length - 9; j++)
                 item.put(doctorNames[j], values[j]);
@@ -790,6 +792,7 @@ public class Roster implements Initializable {
             tblSchedule.getItems().add(item);
         }
 
+        tblSchedule.refresh();
         updateScheduleState();
     }
 
