@@ -1,6 +1,6 @@
 package com.codelog.schyfts.api.matrix;
 
-public enum ListType {
+public enum SlotType {
     AM,
     PM,
     WEEKEND

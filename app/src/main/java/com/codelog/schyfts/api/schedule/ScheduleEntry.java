@@ -1,53 +1,54 @@
 package com.codelog.schyfts.api.schedule;
 
-import com.codelog.schyfts.api.matrix.ListType;
+import com.codelog.schyfts.api.matrix.SlotType;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.format.TextStyle;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class ScheduleEntry {
-    private String list;
-    private ListType listType;
-    private List<String> calls;
-    private List<String> locums;
-    private List<Module> modules;
-    private Map<Module, ListEntry> moduleListMap;
+
+    private final Map<Module, DayList> mainSchedule;
+    private final Map<Integer, String> callSchedule;
+    private final Map<Integer, String> locumSchedule;
     private LocalDate date;
+    private SlotType type;
 
-    public ScheduleEntry(LocalDate date, String list, ListType listType, List<Module> modules) {
-        this.list = date.getDayOfMonth() + " " + list;
+    public ScheduleEntry(LocalDate date, SlotType type) {
         this.date = date;
-        this.listType = listType;
-        this.modules = modules;
-        this.locums = new ArrayList<>(5);
-        this.calls = new ArrayList<>(3);
-        this.moduleListMap = new HashMap<>(17);
+        this.type = type;
+        mainSchedule = new HashMap<>();
+        callSchedule = new HashMap<>();
+        locumSchedule = new HashMap<>();
     }
 
-    public String getList() {
-        return list;
+    public String getSlotName() {
+        return "%d %s %s".formatted(
+                date.getDayOfMonth(),
+                date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH),
+                (type == SlotType.WEEKEND) ? "" : type.name()
+        );
     }
 
-    public ListType getListType() {
-        return listType;
+    public Map<Module, DayList> getMainSchedule() {
+        return mainSchedule;
     }
 
-    public List<String> getCalls() {
-        return calls;
+    public Map<Integer, String> getCallSchedule() {
+        return callSchedule;
     }
 
-    public List<String> getLocums() {
-        return locums;
+    public Map<Integer, String> getLocumSchedule() {
+        return locumSchedule;
     }
 
-    public List<Module> getModules() {
-        return modules;
+    public LocalDate getDate() {
+        return date;
     }
 
-    public Map<Module, ListEntry> getModuleListMap() {
-        return moduleListMap;
+    public SlotType getType() {
+        return type;
     }
 }

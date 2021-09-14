@@ -6,6 +6,8 @@ public class ConfigurationProvider {
     public static String getAPIVariable(String key) throws APIException, IOException {
         var req = APIRequestFactory.createGetSetting();
         var res = req.send(key);
-        return res.getJSONObject("result").getString("value");
+        var value = res.getJSONObject("result").getString("value");
+        ConfigurationContext.getInstance().getConfigMap().put(key, value);
+        return value;
     }
 }

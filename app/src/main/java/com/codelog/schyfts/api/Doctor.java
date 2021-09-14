@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Doctor {
 
@@ -17,8 +18,17 @@ public class Doctor {
     private String name;
     private String surname;
 
+    private static List<Doctor> doctors;
+
     public static List<Doctor> getAllDoctors() {
+        return getAllDoctors(false);
+    }
+
+    protected static List<Doctor> getAllDoctors(boolean forceSync) {
         List<Doctor> results = new ArrayList<>();
+        if (doctors != null && !forceSync) {
+            return doctors;
+        }
 
         try {
             APIRequest req = new APIRequest("getAllDoctors", true);
@@ -30,6 +40,7 @@ public class Doctor {
             return new ArrayList<>();
         }
 
+        doctors = new ArrayList<>(results);
         return results;
     }
 
@@ -72,6 +83,14 @@ public class Doctor {
             ));
 
         }
+    }
+
+    public static Doctor fromId(int id) {
+        for (var d : doctors) {
+            if (d.getId() == id)
+                return d;
+        }
+        return null;
     }
 
     public Doctor(int id, String shortcode, String cellphone, String name, String surname) {
@@ -122,5 +141,18 @@ public class Doctor {
 
     public void setSurname(String surname) {
         this.surname = surname;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Doctor doctor = (Doctor) o;
+        return id == doctor.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

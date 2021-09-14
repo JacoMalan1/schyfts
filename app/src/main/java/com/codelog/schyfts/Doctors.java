@@ -1,6 +1,7 @@
 package com.codelog.schyfts;
 
 import com.codelog.schyfts.api.Doctor;
+import com.codelog.schyfts.api.DoctorContext;
 import com.codelog.schyfts.api.UserContext;
 import com.codelog.clogg.Logger;
 import com.codelog.schyfts.util.Request;
@@ -88,7 +89,8 @@ public class Doctors implements Initializable {
         tblDoctors.getColumns().add(clmSurname);
 
         doctors.clear();
-        doctors = Doctor.getAllDoctors();
+        DoctorContext.getInstance().refresh();
+        doctors = DoctorContext.getInstance().getDoctors();
         tblDoctors.getItems().clear();
         tblDoctors.getItems().addAll(doctors);
 

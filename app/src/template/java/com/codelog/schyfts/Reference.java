@@ -20,5 +20,6 @@ public class Reference {
 
     public static final String MAIN_STORAGE_BUCKET = "nelanest-roster";
     public static final String VERSION_STRING = "${version}";
+    public static final String[] DAYS = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 
 }

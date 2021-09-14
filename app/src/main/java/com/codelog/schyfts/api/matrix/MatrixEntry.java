@@ -10,11 +10,11 @@ import java.util.Map;
 public class MatrixEntry {
 
     private Map<Short, String> moduleMap;
-    private String list;
-    private ListType type;
+    private String slot;
+    private SlotType type;
 
-    public MatrixEntry(String list, ListType type) {
-        this.list = list;
+    public MatrixEntry(String slot, SlotType type) {
+        this.slot = slot;
         this.type = type;
         moduleMap = new HashMap<>();
     }
@@ -23,9 +23,9 @@ public class MatrixEntry {
         return moduleMap;
     }
 
-    public String getList() { return list; }
+    public String getSlot() { return slot; }
 
-    public ListType getListType() { return this.type; }
+    public SlotType getSlotType() { return this.type; }
 
     public static ObservableList<MatrixEntry> fromCSVData(List<List<String>> csvData, String[] DAYS) {
         ObservableList<MatrixEntry> entries = FXCollections.observableArrayList();
@@ -33,7 +33,7 @@ public class MatrixEntry {
         // Weekdays
         for (var i = 0; i < DAYS.length - 2; i++) {
             for (var j = 0; j < 2; j++) {
-                ListType type = ListType.values()[j];
+                SlotType type = SlotType.values()[j];
                 var list = DAYS[i] + " " + type;
                 entries.add(new MatrixEntry(list, type));
             }
@@ -41,7 +41,7 @@ public class MatrixEntry {
 
         // Weekends
         for (var i = DAYS.length - 2; i < DAYS.length; i++)
-            entries.add(new MatrixEntry(DAYS[i], ListType.WEEKEND));
+            entries.add(new MatrixEntry(DAYS[i], SlotType.WEEKEND));
 
         for (var i = 0; i < csvData.size(); i++) {
             var row = csvData.get(i);
