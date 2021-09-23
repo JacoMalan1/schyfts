@@ -226,7 +226,6 @@ public class Roster implements Initializable {
         clmLabel.setSortable(false);
         tblRoster.getColumns().add(clmLabel);
         for (int i = 1; i < MODULES + 1; i++) {
-
             TableColumn<Map, String> clm = new TableColumn<>(String.valueOf(i));
             clm.setEditable(true);
             clm.setCellValueFactory(new MapValueFactory<>(String.valueOf(i)));
@@ -470,20 +469,20 @@ public class Roster implements Initializable {
             tblSchedule.getColumns().add(clm);
         }
 
-        TableColumn<Map, String> clmStatic = new TableColumn<>("Static");
-        TableColumn<Map, String> joubert = new TableColumn<>("Joubert L");
-        keys.add("static");
-        joubert.setCellFactory(TextFieldTableCell.forTableColumn());
-        joubert.setCellValueFactory(new MapValueFactory<>("static"));
-        joubert.setOnEditCommit( event -> {
-            var rowIdx = event.getTablePosition().getRow();
-            tblSchedule.getItems().get(rowIdx).replace("static", event.getNewValue());
-            tblSchedule.refresh();
-            updateScheduleState();
-        });
-        joubert.setEditable(true);
-        clmStatic.getColumns().add(joubert);
-        tblSchedule.getColumns().add(clmStatic);
+//        TableColumn<Map, String> clmStatic = new TableColumn<>("Static");
+//        TableColumn<Map, String> joubert = new TableColumn<>("Joubert L");
+//        keys.add("static");
+//        joubert.setCellFactory(TextFieldTableCell.forTableColumn());
+//        joubert.setCellValueFactory(new MapValueFactory<>("static"));
+//        joubert.setOnEditCommit( event -> {
+//            var rowIdx = event.getTablePosition().getRow();
+//            tblSchedule.getItems().get(rowIdx).replace("static", event.getNewValue());
+//            tblSchedule.refresh();
+//            updateScheduleState();
+//        });
+//        joubert.setEditable(true);
+//        clmStatic.getColumns().add(joubert);
+//        tblSchedule.getColumns().add(clmStatic);
 
         for (int i = 0; i < 3; i++) {
             TableColumn<Map, String> clmCall = new TableColumn<>("Call " + (i + 1));
@@ -779,16 +778,16 @@ public class Roster implements Initializable {
             if (values.length <=1)
                 continue;
 
-            for (var j = 1; j < values.length - 9; j++)
+            for (var j = 1; j < values.length - 8; j++)
                 item.put(doctorNames[j], values[j]);
 
-            item.put("static", values[values.length - 9]);
+//            item.put("static", values[values.length - 9]);
 
-            for (var j = values.length - 8; j < values.length - 5; j++)
-                item.put("call" + (j - values.length + 8 + 1), values[j]);
+            for (var j = values.length - 7; j < values.length - 4; j++)
+                item.put("call" + (j - values.length + 7 + 1), values[j]);
 
-            for (var j = values.length - 5; j < values.length; j++)
-                item.put("loc" + (j - values.length + 5 + 1), values[j]);
+            for (var j = values.length - 4; j < values.length; j++)
+                item.put("loc" + (j - values.length + 4 + 1), values[j]);
             tblSchedule.getItems().add(item);
         }
 
