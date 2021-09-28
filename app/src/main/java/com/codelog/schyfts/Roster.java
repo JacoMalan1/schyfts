@@ -783,11 +783,11 @@ public class Roster implements Initializable {
 
 //            item.put("static", values[values.length - 9]);
 
-            for (var j = values.length - 7; j < values.length - 4; j++)
-                item.put("call" + (j - values.length + 7 + 1), values[j]);
+            for (var j = values.length - 8; j < values.length - 5; j++)
+                item.put("call" + (j - values.length + 8 + 1), values[j]);
 
-            for (var j = values.length - 4; j < values.length; j++)
-                item.put("loc" + (j - values.length + 4 + 1), values[j]);
+            for (var j = values.length - 5; j < values.length; j++)
+                item.put("loc" + (j - values.length + 5 + 1), values[j]);
             tblSchedule.getItems().add(item);
         }
 
