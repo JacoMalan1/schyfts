@@ -3,7 +3,11 @@ package com.codelog.schyfts;
 import com.codelog.clogg.Logger;
 import com.codelog.schyfts.api.*;
 import com.codelog.schyfts.google.StorageContext;
-import com.codelog.schyfts.util.*;
+import com.codelog.schyfts.api.Statistics;
+import com.codelog.schyfts.util.AlertFactory;
+import com.codelog.schyfts.util.FileUtils;
+import com.codelog.schyfts.util.LocalDateFormatter;
+import com.codelog.schyfts.util.RandomUtil;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import javafx.collections.FXCollections;
@@ -14,10 +18,11 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
@@ -28,23 +33,25 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
 import org.json.JSONObject;
 
 import java.awt.*;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.net.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class Roster implements Initializable {
@@ -64,7 +71,7 @@ public class Roster implements Initializable {
     private Map<Integer, Integer> sharedModules;
     private int scheduleOffset;
     private static Optional<Pair<LocalDate, LocalDate>> dateRange;
-    private Map<Integer, Pair<List<TableColumn<Map, ?>>, List<Map<String, String>>>> scheduleState;
+    private static Map<Integer, Pair<List<TableColumn<Map, ?>>, List<Map<String, String>>>> scheduleState;
     private Map<Integer, List<String>> stateKeys;
     private List<CallData> callData;
 
@@ -73,13 +80,17 @@ public class Roster implements Initializable {
     @FXML
     private TableView<Map> tblRoster;
     @FXML
-    private TableView<Map> tblSchedule;
+    private TableView<Map> tblSchedule = null;
     @FXML
     private Tab tabSchedule;
     @FXML
     private TextArea txtDateRange;
     @FXML
     private GridPane grdPrint;
+
+    public static Map<Integer, Pair<List<TableColumn<Map, ?>>, List<Map<String, String>>>> getScheduleState() {
+        return scheduleState;
+    }
 
     private void loadRoster() {
         var matrixBlob = storageBucket.get("matrix.csv");
@@ -444,6 +455,7 @@ public class Roster implements Initializable {
                 clmDoctor.setCellValueFactory(new MapValueFactory<>(doctorNames.get(doctor)));
                 keys.add(doctorNames.get(doctor));
                 clmDoctor.setEditable(true);
+
                 clmDoctor.setCellFactory(param -> new TextFieldTableCell<>(new DefaultStringConverter()) {
 
                     @Override
@@ -469,31 +481,40 @@ public class Roster implements Initializable {
             tblSchedule.getColumns().add(clm);
         }
 
-//        TableColumn<Map, String> clmStatic = new TableColumn<>("Static");
-//        TableColumn<Map, String> joubert = new TableColumn<>("Joubert L");
-//        keys.add("static");
-//        joubert.setCellFactory(TextFieldTableCell.forTableColumn());
-//        joubert.setCellValueFactory(new MapValueFactory<>("static"));
-//        joubert.setOnEditCommit( event -> {
-//            var rowIdx = event.getTablePosition().getRow();
-//            tblSchedule.getItems().get(rowIdx).replace("static", event.getNewValue());
-//            tblSchedule.refresh();
-//            updateScheduleState();
-//        });
-//        joubert.setEditable(true);
-//        clmStatic.getColumns().add(joubert);
-//        tblSchedule.getColumns().add(clmStatic);
-
         for (int i = 0; i < 3; i++) {
             TableColumn<Map, String> clmCall = new TableColumn<>("Call " + (i + 1));
             var key = "call" + (i + 1);
-            createColumn(clmCall, key);
+            keys.add(key);
+            clmCall.setCellValueFactory(new MapValueFactory<>(key));
+
+            List<String> doctorStrings = new ArrayList<>();
+            for (var d : doctors) {
+                doctorStrings.add(d.getName() + " " + d.getSurname());
+            }
+            clmCall.setCellFactory(ChoiceBoxTableCell.forTableColumn(FXCollections.observableArrayList(doctorStrings)));
+
+            clmCall.setOnEditCommit(event -> {
+                var rowIdx = event.getTablePosition().getRow();
+                tblSchedule.getItems().get(rowIdx).replace(key, event.getNewValue());
+                tblSchedule.refresh();
+                updateScheduleState();
+            });
+            tblSchedule.getColumns().add(clmCall);
         }
 
         for (int i = 0; i < 5; i++) {
             TableColumn<Map, String> clmLoc = new TableColumn<>("Loc " + (i + 1));
             var key = "loc" + (i + 1);
-            createColumn(clmLoc, key);
+            keys.add(key);
+            clmLoc.setCellValueFactory(new MapValueFactory<>(key));
+            clmLoc.setCellFactory(TextFieldTableCell.forTableColumn());
+            clmLoc.setOnEditCommit(event -> {
+                var rowIdx = event.getTablePosition().getRow();
+                tblSchedule.getItems().get(rowIdx).replace(key, event.getNewValue());
+                tblSchedule.refresh();
+                updateScheduleState();
+            });
+            tblSchedule.getColumns().add(clmLoc);
         }
 
         ObservableList<Map<String, String>> items = FXCollections.observableArrayList();
@@ -702,19 +723,6 @@ public class Roster implements Initializable {
         }
     }
 
-    private void createColumn(TableColumn<Map, String> clm, String key) {
-        keys.add(key);
-        clm.setCellValueFactory(new MapValueFactory<>(key));
-        clm.setCellFactory(TextFieldTableCell.forTableColumn());
-        clm.setOnEditCommit(event -> {
-            var rowIdx = event.getTablePosition().getRow();
-            tblSchedule.getItems().get(rowIdx).replace(key, event.getNewValue());
-            tblSchedule.refresh();
-            updateScheduleState();
-        });
-        tblSchedule.getColumns().add(clm);
-    }
-
     public void mnuSaveScheduleClick() {
 
         if (dateRange.isEmpty()) {
@@ -778,8 +786,10 @@ public class Roster implements Initializable {
             if (values.length <=1)
                 continue;
 
-            for (var j = 1; j < values.length - 8; j++)
+            for (var j = 1; j < values.length - 8; j++) {
+
                 item.put(doctorNames[j], values[j]);
+            }
 
 //            item.put("static", values[values.length - 9]);
 
@@ -923,5 +933,42 @@ public class Roster implements Initializable {
 
     public void mnuLoadClick(ActionEvent actionEvent) {
         loadSchedule();
+    }
+
+    private int max(Set<Integer> nums) {
+        int result = (int)nums.toArray()[0];
+
+        for (var num : nums) {
+            if (num > result) {
+                result = num;
+            }
+        }
+
+        return result;
+    }
+
+    public void mnuCalculateStatistics_Click(ActionEvent actionEvent) {
+
+        Map<Integer, ArrayList<HashMap<String, String>>> items = new HashMap<>();
+        for (int i = 0; i < maxWeeks; i++) {
+            ArrayList<HashMap<String, String>> list = new ArrayList<>();
+            for (var map : tblSchedule.getItems()) {
+                HashMap<String, String> newMap = new HashMap<>();
+                for (var key : map.keySet())
+                    newMap.put((String)key, (String)map.get(key));
+                list.add(newMap);
+            }
+            items.put(i, list);
+            advanceSchedule();
+        }
+
+        for (int i = 0; i < maxWeeks; i++)
+            advanceSchedule(true);
+
+        Statistics stats = new Statistics(items, doctors);
+        var statsList = stats.calculateStatistics("call");
+        StatisticsViewer.Companion.setStatistics(statsList);
+        Schyfts.createStage("statistics.fxml", "Statistics Viewer", true, true);
+
     }
 }

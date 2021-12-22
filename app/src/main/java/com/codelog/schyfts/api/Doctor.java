@@ -17,6 +17,11 @@ public class Doctor {
     private String name;
     private String surname;
 
+    @Override
+    public String toString() {
+        return surname + ", " + name;
+    }
+
     public static List<Doctor> getAllDoctors() {
         List<Doctor> results = new ArrayList<>();
 
@@ -79,7 +84,6 @@ public class Doctor {
         }
 
         return results;
-
     }
 
     public Doctor(int id, String shortcode, String cellphone, String name, String surname) {
