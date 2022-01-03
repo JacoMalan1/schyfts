@@ -33,7 +33,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
-import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
 import org.json.JSONObject;
 
@@ -968,7 +967,7 @@ public class Roster implements Initializable {
         Statistics stats = new Statistics(items, doctors);
         var statsList = stats.calculateStatistics("call");
         StatisticsViewer.Companion.setStatistics(statsList);
-        Schyfts.createStage("statistics.fxml", "Statistics Viewer", true, true);
+        Schyfts.createStage("FXML/statistics.fxml", "Statistics Viewer", true, true);
 
     }
 }

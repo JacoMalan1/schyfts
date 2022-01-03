@@ -1,6 +1,7 @@
 package com.codelog.schyfts;
 
 import com.codelog.clogg.Logger;
+import com.codelog.schyfts.util.StageCreateCallback;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -25,7 +26,7 @@ public class Schyfts extends Application {
     public void start(Stage primaryStage) throws IOException {
 
         Logger.getInstance().info("Building GUI...");
-        var file = getClass().getClassLoader().getResource("login.fxml");
+        var file = getClass().getClassLoader().getResource("FXML/login.fxml");
         if (file == null)
             return;
 
@@ -67,7 +68,7 @@ public class Schyfts extends Application {
         }
     }
 
-    public static Stage createStage(String resource, String title, boolean setModal, boolean setOwner) {
+    public static Stage createStage(String resource, String title, boolean setModal, boolean setOwner, StageCreateCallback callback) {
         var file = Schyfts.class.getClassLoader().getResource(resource);
         if (file == null) {
             Logger.getInstance().error(String.format("Couldn't load resource (%s)", resource));
@@ -102,9 +103,17 @@ public class Schyfts extends Application {
         else
             stage.initModality(Modality.NONE);
 
+        if (callback != null) {
+            callback.callback(stage);
+        }
+
         stage.show();
 
         return stage;
+    }
+
+    public static Stage createStage(String resource, String title, boolean setModal, boolean setOwner) {
+        return createStage(resource, title, setModal, setOwner, null);
     }
 
     public static Stage createStage(String resource, String title) {

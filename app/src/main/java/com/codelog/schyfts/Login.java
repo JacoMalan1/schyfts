@@ -5,21 +5,16 @@ import com.codelog.clogg.Logger;
 import com.codelog.schyfts.concurrency.Callback;
 import com.codelog.schyfts.concurrency.CallbackWorker;
 import com.codelog.schyfts.util.AlertFactory;
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Screen;
-import javafx.stage.Stage;
-import javafx.stage.Window;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ResourceBundle;
@@ -35,7 +30,7 @@ public class Login implements Initializable, Callback {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        var stage = Schyfts.createStage("logs.fxml", "Log", false, false);
+        var stage = Schyfts.createStage("FXML/logs.fxml", "Log", false, false);
         assert stage != null;
 
         var x = Screen.getPrimary().getBounds().getMinX();
@@ -81,7 +76,7 @@ public class Login implements Initializable, Callback {
             alert.show();
         } else {
             Logger.getInstance().debug(String.format("Login successfull (token: %s)", user.getToken().substring(0, 4)));
-            var newStage = Schyfts.createStage("menu.fxml", "Menu", false, false);
+            var newStage = Schyfts.createStage("FXML/menu.fxml", "Menu", false, false);
             var oldStage = Schyfts.currentStage;
             Schyfts.currentStage = newStage;
             oldStage.close();

@@ -2,9 +2,8 @@ package com.codelog.schyfts;
 
 import com.codelog.schyfts.api.UserContext;
 import com.codelog.clogg.Logger;
-import javafx.application.Application;
+import com.codelog.schyfts.util.StageCreateCallback;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -37,13 +36,13 @@ public class Menu implements Initializable {
     private ImageView imgLogo;
 
     public void btnRosterClick(ActionEvent actionEvent) {
-        Roster.primaryStage = Schyfts.createStage("roster.fxml", "Roster");
+        Roster.primaryStage = Schyfts.createStage("FXML/roster.fxml", "Roster");
         Roster.primaryStage.setMaximized(true);
     }
 
     public void btnLeaveCalendarClick(ActionEvent actionEvent) {
         if (UserContext.getInstance().getCurrentUser() != null) {
-            Schyfts.createStage("leave.fxml", "Leave");
+            Schyfts.createStage("FXML/leave.fxml", "Leave");
         }
     }
 
@@ -74,7 +73,7 @@ public class Menu implements Initializable {
     public void btnDoctorInformationClick(ActionEvent actionEvent) {
 
         if (UserContext.getInstance().getCurrentUser() != null) {
-            Schyfts.createStage("doctors.fxml", "Doctors");
+            Schyfts.createStage("FXML/doctors.fxml", "Doctors");
         }
 
     }
@@ -82,17 +81,23 @@ public class Menu implements Initializable {
     public void btnUserManagementClick(ActionEvent actionEvent) {
 
         if (UserContext.getInstance().getCurrentUser() != null)
-            Schyfts.createStage("users.fxml", "User Management");
+            Schyfts.createStage("FXML/users.fxml", "User Management");
 
     }
 
     public void btnSurgeonLeaveClick(ActionEvent actionEvent) {
         if (UserContext.getInstance().getCurrentUser() != null)
-            Schyfts.createStage("surgeons_leave.fxml", "Surgeon Leave");
+            Schyfts.createStage("FXML/surgeons_leave.fxml", "Surgeon Leave");
     }
 
     public void btnCallsClick(ActionEvent actionEvent) {
-        if (UserContext.getInstance().getCurrentUser() != null)
-            Schyfts.createStage("callschedule.fxml", "Calls");
+        if (UserContext.getInstance().getCurrentUser() != null) {
+            Schyfts.createStage("FXML/callschedule.fxml", "Calls", false, false,
+                stage -> {
+                    CallSchedule.Companion.setStage(stage);
+                    CallSchedule.Companion.registerEventListeners();
+                }
+            );
+        }
     }
 }
