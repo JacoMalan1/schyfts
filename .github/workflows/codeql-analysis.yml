@@ -59,11 +59,16 @@ jobs:
     # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
     #    and modify them (or add more) to build your code if your project
     #    uses a compiled language
-
+    - name: Set up JDK 15
+      uses: actions/setup-java@v1
+      with:
+        java-version: 15
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Fetch submodules
+      run: git submodule init && git submodule update
     - name: Build with Gradle
-      run: |
-        git submodule init && git submodule update
-        ln -sf clogg/lib lib && ./gradlew --no-daemon build
+      run: ln -sf clogg/lib lib && ./gradlew --no-daemon build
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
