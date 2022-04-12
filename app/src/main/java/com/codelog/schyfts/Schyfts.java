@@ -24,7 +24,6 @@ public class Schyfts extends Application {
 
     @Override
     public void start(Stage primaryStage) throws IOException {
-
         Logger.getInstance().info("Building GUI...");
         var file = getClass().getClassLoader().getResource("FXML/login.fxml");
         if (file == null)
@@ -120,6 +119,7 @@ public class Schyfts extends Application {
         return createStage(resource, title, true, true);
     }
 
+    @SuppressWarnings("unused")
     public static void changeScene(String resource, String title) {
         currentStage.setTitle(title);
         changeScene(resource);

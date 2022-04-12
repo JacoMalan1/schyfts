@@ -19,9 +19,8 @@ public class StorageContext {
             if (stream == null)
                 throw new IOException("Couldn't open resource google/service-account.json");
             var creds = GoogleCredentials.fromStream(stream);
-            var storage = StorageOptions.newBuilder().setCredentials(creds)
+            this.storage = StorageOptions.newBuilder().setCredentials(creds)
                     .setProjectId(Reference.GOOGLE_CLOUD_PROJECT_ID).build().getService();
-            this.storage = storage;
         } catch (IOException e) {
             Logger.getInstance().error("Couldn't load google credentials!");
             Logger.getInstance().exception(e);

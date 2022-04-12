@@ -19,103 +19,94 @@
 
 <BorderPane fx:id="bdpRoot" prefHeight="872.0" prefWidth="1298.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codelog.schyfts.Roster">
    <center>
-      <TabPane>
-         <tabs>
-            <Tab fx:id="tabMatrix" closable="false" text="Matrix">
-               <content>
-                  <BorderPane>
-                     <top>
-                        <MenuBar BorderPane.alignment="CENTER">
-                          <menus>
-                            <Menu text="File">
-                              <items>
-                                    <MenuItem fx:id="mnuSave" mnemonicParsing="false" onAction="#mnuSave" text="Save Roster">
-                                       <accelerator>
-                                          <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                                       </accelerator>
-                                    </MenuItem>
-                              </items>
-                            </Menu>
-                              <Menu mnemonicParsing="false" text="Generate">
-                                <items>
-                                  <MenuItem fx:id="mnuGenerateSchedule" mnemonicParsing="false" onAction="#mnuGenerateScheduleClick" text="Schedule" />
-                                </items>
-                              </Menu>
-                          </menus>
-                        </MenuBar>
-                     </top>
-                     <center>
-                        <TableView fx:id="tblRoster" editable="true" minHeight="720.0" minWidth="1280.0" />
-                     </center>
-                  </BorderPane>
-               </content>
-            </Tab>
-            <Tab fx:id="tabSchedule" closable="false" text="Schedule">
-              <content>
-                <BorderPane>
-                     <center>
-                        <GridPane fx:id="grdPrint">
+       <TabPane>
+           <Tab fx:id="tabMatrix" closable="false" text="Matrix">
+               <BorderPane>
+                   <top>
+                       <MenuBar BorderPane.alignment="CENTER">
+                           <Menu text="File">
+                               <MenuItem fx:id="mnuSave" mnemonicParsing="false" onAction="#mnuSave"
+                                         text="Save Roster">
+                                   <accelerator>
+                                       <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP"
+                                                           shortcut="UP"/>
+                                   </accelerator>
+                               </MenuItem>
+                           </Menu>
+                           <Menu mnemonicParsing="false" text="Generate">
+                               <MenuItem fx:id="mnuGenerateSchedule" mnemonicParsing="false"
+                                         onAction="#mnuGenerateScheduleClick" text="Schedule"/>
+                           </Menu>
+                       </MenuBar>
+                   </top>
+                   <center>
+                       <TableView fx:id="tblRoster" editable="true" minHeight="720.0" minWidth="1280.0"/>
+                   </center>
+               </BorderPane>
+           </Tab>
+           <Tab fx:id="tabSchedule" closable="false" text="Schedule">
+               <BorderPane>
+                   <center>
+                       <GridPane fx:id="grdPrint">
                            <columnConstraints>
-                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                               <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
                            </columnConstraints>
                            <rowConstraints>
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                              <RowConstraints maxHeight="118.0" minHeight="1.0" prefHeight="1.0" vgrow="SOMETIMES" />
-                              <RowConstraints maxHeight="626.0" minHeight="10.0" prefHeight="626.0" valignment="CENTER" vgrow="ALWAYS" />
-                              <RowConstraints maxHeight="220.0" minHeight="0.0" prefHeight="98.0" vgrow="SOMETIMES" />
+                               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                               <RowConstraints maxHeight="118.0" minHeight="1.0" prefHeight="1.0" vgrow="SOMETIMES"/>
+                               <RowConstraints maxHeight="626.0" minHeight="10.0" prefHeight="626.0"
+                                               valignment="CENTER" vgrow="ALWAYS"/>
+                               <RowConstraints maxHeight="220.0" minHeight="0.0" prefHeight="98.0" vgrow="SOMETIMES"/>
                            </rowConstraints>
-                           <children>
-                              <HBox prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="1">
-                                 <children>
-                                    <TextArea fx:id="txtDateRange" editable="false" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
-                                    <TextArea fx:id="txtAddress" editable="false" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
-                                    <TextArea editable="false" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
-                                 </children>
-                              </HBox>
-                              <TableView fx:id="tblSchedule" prefHeight="200.0" prefWidth="1280.0" GridPane.hgrow="NEVER" GridPane.rowIndex="2" GridPane.vgrow="NEVER">
+                           <HBox prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="1">
+                               <TextArea fx:id="txtDateRange" editable="false" prefHeight="200.0" prefWidth="200.0"
+                                         HBox.hgrow="ALWAYS"/>
+                               <TextArea fx:id="txtAddress" editable="false" prefHeight="200.0" prefWidth="200.0"
+                                         HBox.hgrow="ALWAYS"/>
+                               <TextArea editable="false" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS"/>
+                           </HBox>
+                           <TableView fx:id="tblSchedule" prefHeight="200.0" prefWidth="1280.0" GridPane.hgrow="NEVER"
+                                      GridPane.rowIndex="2" GridPane.vgrow="NEVER">
 
-                              </TableView>
-                              <ImageView fx:id="imgLogo" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER" />
-                              <ListView fx:id="lvDoctorInfo" prefHeight="200.0" prefWidth="200.0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" />
-                           </children>
-                        </GridPane>
-                     </center>
-                     <top>
-                        <HBox alignment="CENTER" BorderPane.alignment="CENTER">
-                           <children>
-                              <MenuBar HBox.hgrow="ALWAYS">
-                                <menus>
-                                  <Menu mnemonicParsing="false" text="File">
-                                    <items>
-                                      <MenuItem fx:id="mnuSaveScheduleClick" mnemonicParsing="false" onAction="#mnuSaveScheduleClick" text="Save">
-                                            <accelerator>
-                                                <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                                            </accelerator>
-                                        </MenuItem>
-                                        <MenuItem fx:id="mnuPrint" mnemonicParsing="false" onAction="#mnuPrintClick" text="Print">
-                                            <accelerator>
-                                                <KeyCodeCombination alt="UP" code="P" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                                            </accelerator>
-                                        </MenuItem>
-                                        <MenuItem mnemonicParsing="false" onAction="#mnuLoadClick" text="Load Roster" />
-                                    </items>
-                                  </Menu>
-                                    <Menu mnemonicParsing="false" text="Statistics">
-                                      <items>
-                                        <MenuItem fx:id="mnuCalculateStatistics" mnemonicParsing="false" onAction="#mnuCalculateStatistics_Click" text="Calculate Statistics" />
-                                      </items>
-                                    </Menu>
-                                </menus>
-                              </MenuBar>
-                              <Button fx:id="btnPrev" mnemonicParsing="false" onAction="#btnPrevClick" text="Previous week" />
-                              <Button fx:id="btnNext" mnemonicParsing="false" onAction="#btnNextClick" text="Next Week" />
-                           </children>
-                        </HBox>
-                     </top>
-                </BorderPane>
-              </content>
-            </Tab>
-         </tabs>
-      </TabPane>
+                           </TableView>
+                           <ImageView fx:id="imgLogo" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true"
+                                      preserveRatio="true" GridPane.halignment="CENTER"/>
+                           <ListView fx:id="lvDoctorInfo" prefHeight="200.0" prefWidth="200.0"
+                                     GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3"/>
+                       </GridPane>
+                   </center>
+                   <top>
+                       <HBox alignment="CENTER" BorderPane.alignment="CENTER">
+                           <MenuBar HBox.hgrow="ALWAYS">
+                               <Menu mnemonicParsing="false" text="File">
+                                   <MenuItem fx:id="mnuSaveScheduleClick" mnemonicParsing="false"
+                                             onAction="#mnuSaveScheduleClick" text="Save">
+                                       <accelerator>
+                                           <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP"
+                                                               shift="UP" shortcut="UP"/>
+                                       </accelerator>
+                                   </MenuItem>
+                                   <MenuItem fx:id="mnuPrint" mnemonicParsing="false" onAction="#mnuPrintClick"
+                                             text="Print">
+                                       <accelerator>
+                                           <KeyCodeCombination alt="UP" code="P" control="DOWN" meta="UP"
+                                                               shift="UP" shortcut="UP"/>
+                                       </accelerator>
+                                   </MenuItem>
+                                   <MenuItem mnemonicParsing="false" onAction="#mnuLoadClick" text="Load Roster"/>
+                               </Menu>
+                               <Menu mnemonicParsing="false" text="Statistics">
+                                   <MenuItem fx:id="mnuCalculateStatistics" mnemonicParsing="false"
+                                             onAction="#mnuCalculateStatistics_Click" text="Calculate Statistics"/>
+                               </Menu>
+                           </MenuBar>
+                           <Button fx:id="btnPrev" mnemonicParsing="false" onAction="#btnPrevClick"
+                                   text="Previous week"/>
+                           <Button fx:id="btnNext" mnemonicParsing="false" onAction="#btnNextClick" text="Next Week"/>
+                       </HBox>
+                   </top>
+               </BorderPane>
+           </Tab>
+       </TabPane>
    </center>
 </BorderPane>

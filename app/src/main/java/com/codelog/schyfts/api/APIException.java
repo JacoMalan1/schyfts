@@ -3,7 +3,7 @@ package com.codelog.schyfts.api;
 import org.json.JSONObject;
 
 public class APIException extends Exception {
-    private JSONObject apiResponse;
+    private final JSONObject apiResponse;
     public APIException(String message, JSONObject apiResponse) {
         super(message);
         this.apiResponse = apiResponse;

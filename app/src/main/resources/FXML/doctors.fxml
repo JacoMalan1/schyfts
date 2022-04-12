@@ -16,21 +16,15 @@
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="799.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codelog.schyfts.Doctors">
    <top>
-      <SplitPane dividerPositions="0.5" BorderPane.alignment="CENTER">
-         <items>
-            <MenuBar>
-              <menus>
-                <Menu mnemonicParsing="false" text="File">
-                  <items>
-                        <MenuItem mnemonicParsing="false" onAction="#btnAddDoctorClick" text="Add doctor" />
-                    <MenuItem mnemonicParsing="false" text="Close" />
-                  </items>
-                </Menu>
-              </menus>
-            </MenuBar>
-            <ProgressBar fx:id="prgStatus" prefWidth="200.0" progress="0.0" />
-         </items>
-      </SplitPane>
+       <SplitPane dividerPositions="0.5" BorderPane.alignment="CENTER">
+           <MenuBar>
+               <Menu mnemonicParsing="false" text="File">
+                   <MenuItem mnemonicParsing="false" onAction="#btnAddDoctorClick" text="Add doctor"/>
+                   <MenuItem mnemonicParsing="false" text="Close"/>
+               </Menu>
+           </MenuBar>
+           <ProgressBar fx:id="prgStatus" prefWidth="200.0" progress="0.0"/>
+       </SplitPane>
    </top>
    <center>
       <TableView fx:id="tblDoctors" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
@@ -39,74 +33,66 @@
          </columnResizePolicy></TableView>
    </center>
    <bottom>
-      <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-         <children>
-            <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
-               <children>
-                  <Label alignment="CENTER_RIGHT" text="Shortcode">
-                     <VBox.margin>
-                        <Insets />
-                     </VBox.margin>
-                     <padding>
-                        <Insets top="13.0" />
-                     </padding>
-                  </Label>
-                  <Label text="Cellphone">
-                     <VBox.margin>
-                        <Insets />
-                     </VBox.margin>
-                     <padding>
-                        <Insets top="13.0" />
-                     </padding>
-                  </Label>
-                  <Label text="Name">
-                     <VBox.margin>
-                        <Insets />
-                     </VBox.margin>
-                     <padding>
-                        <Insets top="13.0" />
-                     </padding>
-                  </Label>
-                  <Label text="Surname">
-                     <VBox.margin>
-                        <Insets />
-                     </VBox.margin>
-                     <padding>
-                        <Insets bottom="15.0" top="13.0" />
-                     </padding>
-                  </Label>
-               </children>
-            </VBox>
-            <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
-               <children>
-                  <TextField fx:id="txtShortcode">
-                     <VBox.margin>
-                        <Insets top="5.0" />
-                     </VBox.margin>
-                  </TextField>
-                  <TextField fx:id="txtCellphone">
-                     <VBox.margin>
-                        <Insets top="5.0" />
-                     </VBox.margin>
-                  </TextField>
-                  <TextField fx:id="txtName">
-                     <VBox.margin>
-                        <Insets top="5.0" />
-                     </VBox.margin>
-                  </TextField>
-                  <TextField fx:id="txtSurname">
-                     <VBox.margin>
-                        <Insets bottom="5.0" top="5.0" />
-                     </VBox.margin>
-                  </TextField>
-               </children>
-            </VBox>
-            <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
-               <children>
-                  <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#btnSubmitClick" text="Submit" />
-               </children>
-            </VBox>
-         </children>
-      </HBox>
+       <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+           <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+               <Label alignment="CENTER_RIGHT" text="Shortcode">
+                   <VBox.margin>
+                       <Insets/>
+                   </VBox.margin>
+                   <padding>
+                       <Insets top="13.0"/>
+                   </padding>
+               </Label>
+               <Label text="Cellphone">
+                   <VBox.margin>
+                       <Insets/>
+                   </VBox.margin>
+                   <padding>
+                       <Insets top="13.0"/>
+                   </padding>
+               </Label>
+               <Label text="Name">
+                   <VBox.margin>
+                       <Insets/>
+                   </VBox.margin>
+                   <padding>
+                       <Insets top="13.0"/>
+                   </padding>
+               </Label>
+               <Label text="Surname">
+                   <VBox.margin>
+                       <Insets/>
+                   </VBox.margin>
+                   <padding>
+                       <Insets bottom="15.0" top="13.0"/>
+                   </padding>
+               </Label>
+           </VBox>
+           <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
+               <TextField fx:id="txtShortcode">
+                   <VBox.margin>
+                       <Insets top="5.0"/>
+                   </VBox.margin>
+               </TextField>
+               <TextField fx:id="txtCellphone">
+                   <VBox.margin>
+                       <Insets top="5.0"/>
+                   </VBox.margin>
+               </TextField>
+               <TextField fx:id="txtName">
+                   <VBox.margin>
+                       <Insets top="5.0"/>
+                   </VBox.margin>
+               </TextField>
+               <TextField fx:id="txtSurname">
+                   <VBox.margin>
+                       <Insets bottom="5.0" top="5.0"/>
+                   </VBox.margin>
+               </TextField>
+           </VBox>
+           <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+               <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#btnSubmitClick" text="Submit"/>
+           </VBox>
+       </HBox>
    </bottom>
 </BorderPane>

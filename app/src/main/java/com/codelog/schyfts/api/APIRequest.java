@@ -8,10 +8,10 @@ import java.io.IOException;
 
 public class APIRequest {
 
-    private String method;
+    private final String method;
     private JSONObject body;
-    private String[] params;
-    private boolean authenticate;
+    private final String[] params;
+    private final boolean authenticate;
 
     /**
      * Constructs a new API Request.

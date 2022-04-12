@@ -7,7 +7,7 @@ public class UserContext {
 
     private static UserContext instance;
 
-    private List<User> users;
+    private final List<User> users;
     private User currentUser;
 
     private UserContext() {

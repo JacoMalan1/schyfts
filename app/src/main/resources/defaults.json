@@ -7,5 +7,6 @@
       "Warn",
       "Error"
     ]
-  }
+  },
+  "testing": false
 }

@@ -1,32 +1,13 @@
 package com.codelog.schyfts;
 
 import com.codelog.clogg.LogEventBuffer;
-import com.codelog.clogg.Logger;
 import com.codelog.clogg.LogWriterFactory;
-import com.codelog.schyfts.util.FileUtils;
-import org.json.JSONObject;
+import com.codelog.clogg.Logger;
+
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class Main {
-
-    public static JSONObject config;
-    public static String logFile;
-
     public static void main(String[] args) {
-        config = null;
-        try {
-            if (Files.exists(Path.of("config.json")))
-                config = FileUtils.readJSONFile("config.json");
-            else
-                config = FileUtils.readJSONResource("defaults.json");
-        } catch (IOException e) {
-            Logger.getInstance().error("Couldn't load config!");
-            Logger.getInstance().exception(e);
-            System.exit(-1);
-        }
-
         String[] props = {
                 "os.name",
                 "os.arch",
@@ -51,8 +32,14 @@ public class Main {
             Logger.getInstance().error("Couldn't open file stream writer");
             Logger.getInstance().exception(e);
         }
-        Logger.getInstance().info("System information: \n" + builder.toString());
+        Logger.getInstance().info("System information: \n" + builder);
         Logger.getInstance().info("Schyfts version: " + Reference.VERSION_STRING);
+
+        Logger.getInstance().info("Loading configuration...");
+        if (ConfigContext.INSTANCE.getConfig().getBoolean("testing")) {
+            Reference.API_URL = "https://testing-dot-schyfts.uc.r.appspot.com/";
+        }
+        Logger.getInstance().info("API URL: " + Reference.API_URL);
 
         try {
             Schyfts.main(args);

@@ -9,7 +9,7 @@ import java.net.URL;
 
 public class Request {
 
-    private URL url;
+    private final URL url;
     private JSONObject body;
     private boolean sent;
     private int responseCode;

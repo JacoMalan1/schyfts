@@ -4,8 +4,6 @@ import com.codelog.clogg.Logger;
 import com.codelog.schyfts.api.APIException;
 import com.codelog.schyfts.api.APIRequest;
 import com.codelog.schyfts.util.AlertFactory;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -84,14 +82,12 @@ public class SurgeonLeave implements Initializable {
                 if (!oldValue.equals(newValue) && !newValue.equals("")) {
                     filteredLeave = new FilteredList<>(leaveList);
                     filteredLeave.setPredicate(p -> p.get("surname").contains(newValue));
-                    tblLeave.getItems().clear();
-                    tblLeave.getItems().addAll(filteredLeave);
                 } else {
                     filteredLeave = new FilteredList<>(leaveList);
                     filteredLeave.setPredicate(p -> true);
-                    tblLeave.getItems().clear();
-                    tblLeave.getItems().addAll(filteredLeave);
                 }
+                tblLeave.getItems().clear();
+                tblLeave.getItems().addAll(filteredLeave);
             });
         }
 

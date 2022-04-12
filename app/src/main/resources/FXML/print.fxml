@@ -9,26 +9,19 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codelog.schyfts.PrintRoster">
    <center>
-      <ScrollPane fitToHeight="true" fitToWidth="true" BorderPane.alignment="CENTER">
-         <content>
-            <WebView fx:id="wvPrint" />
-         </content>
-      </ScrollPane>
+       <ScrollPane fitToHeight="true" fitToWidth="true" BorderPane.alignment="CENTER">
+           <WebView fx:id="wvPrint"/>
+       </ScrollPane>
    </center>
    <top>
-      <MenuBar BorderPane.alignment="CENTER">
-        <menus>
-          <Menu mnemonicParsing="false" text="File">
-            <items>
-              <MenuItem fx:id="mnuPrint" onAction="#mnuPrintClick" mnemonicParsing="false" text="Print" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="View">
-            <items>
-              <MenuItem fx:id="mnuReloadPage" onAction="#mnuReloadPageClick" mnemonicParsing="false" text="Reload Page" />
-            </items>
-          </Menu>
-        </menus>
-      </MenuBar>
+       <MenuBar BorderPane.alignment="CENTER">
+           <Menu mnemonicParsing="false" text="File">
+               <MenuItem fx:id="mnuPrint" onAction="#mnuPrintClick" mnemonicParsing="false" text="Print"/>
+           </Menu>
+           <Menu mnemonicParsing="false" text="View">
+               <MenuItem fx:id="mnuReloadPage" onAction="#mnuReloadPageClick" mnemonicParsing="false"
+                         text="Reload Page"/>
+           </Menu>
+       </MenuBar>
    </top>
 </BorderPane>

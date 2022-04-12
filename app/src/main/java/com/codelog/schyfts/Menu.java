@@ -2,7 +2,6 @@ package com.codelog.schyfts;
 
 import com.codelog.schyfts.api.UserContext;
 import com.codelog.clogg.Logger;
-import com.codelog.schyfts.util.StageCreateCallback;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

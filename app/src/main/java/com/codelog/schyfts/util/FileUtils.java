@@ -1,7 +1,6 @@
 package com.codelog.schyfts.util;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 import java.io.*;

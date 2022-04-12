@@ -3,7 +3,6 @@ package com.codelog.schyfts;
 import com.codelog.clogg.Logger;
 import com.codelog.schyfts.api.*;
 import com.codelog.schyfts.google.StorageContext;
-import com.codelog.schyfts.api.Statistics;
 import com.codelog.schyfts.util.AlertFactory;
 import com.codelog.schyfts.util.FileUtils;
 import com.codelog.schyfts.util.LocalDateFormatter;

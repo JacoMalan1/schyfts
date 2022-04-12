@@ -12,17 +12,15 @@
       <TextArea fx:id="txtLog" prefHeight="380.0" prefWidth="600.0" BorderPane.alignment="CENTER" />
    </center>
    <bottom>
-      <HBox alignment="CENTER_RIGHT" prefHeight="34.0" prefWidth="600.0" spacing="5.0" BorderPane.alignment="CENTER">
-         <children>
-            <Button fx:id="btnSend" mnemonicParsing="false" text="Send report" onAction="#btnSendClick" />
-            <Button fx:id="btnSave" mnemonicParsing="false" text="Export Log" onAction="#btnSaveClick" />
-         </children>
-         <BorderPane.margin>
-            <Insets />
-         </BorderPane.margin>
-         <padding>
-            <Insets right="5.0" />
-         </padding>
-      </HBox>
+       <HBox alignment="CENTER_RIGHT" prefHeight="34.0" prefWidth="600.0" spacing="5.0" BorderPane.alignment="CENTER">
+           <BorderPane.margin>
+               <Insets/>
+           </BorderPane.margin>
+           <padding>
+               <Insets right="5.0"/>
+           </padding>
+           <Button fx:id="btnSend" mnemonicParsing="false" text="Send report" onAction="#btnSendClick"/>
+           <Button fx:id="btnSave" mnemonicParsing="false" text="Export Log" onAction="#btnSaveClick"/>
+       </HBox>
    </bottom>
 </BorderPane>

@@ -9,12 +9,12 @@ import java.util.List;
 
 public class CallData {
 
-    private LocalDate date;
-    private int doctorID;
-    private String surname;
-    private String name;
-    private boolean state;
-    private int id;
+    private final LocalDate date;
+    private final int doctorID;
+    private final String surname;
+    private final String name;
+    private final boolean state;
+    private final int id;
 
     public CallData(int doctorID, int id, String surname, String name, LocalDate date, boolean state) {
         this.date = date;

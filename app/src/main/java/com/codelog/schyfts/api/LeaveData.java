@@ -10,11 +10,11 @@ import java.util.List;
 
 public class LeaveData {
 
-    private int doctorId;
-    private String doctorSurname;
-    private String doctorName;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private final int doctorId;
+    private final String doctorSurname;
+    private final String doctorName;
+    private final LocalDate startDate;
+    private final LocalDate endDate;
 
     public LeaveData(int doctorId, String doctorSurname, String doctorName, LocalDate startDate, LocalDate endDate) {
         this.doctorId = doctorId;

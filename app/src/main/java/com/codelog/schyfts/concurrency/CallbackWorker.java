@@ -2,7 +2,7 @@ package com.codelog.schyfts.concurrency;
 
 public class CallbackWorker implements Runnable {
 
-    private Callback callback;
+    private final Callback callback;
 
     public CallbackWorker(Callback cb) {
         this.callback = cb;
