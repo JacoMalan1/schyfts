@@ -5,6 +5,7 @@ import com.codelog.schyfts.api.LeaveData;
 import com.codelog.schyfts.api.UserContext;
 import com.codelog.clogg.Logger;
 import com.codelog.schyfts.util.Request;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
@@ -97,6 +98,11 @@ public class Leave implements Initializable {
         for (var d : doctors) {
             cmbDoctor.getItems().add(String.format("%s, %s", d.getSurname(), d.getName()));
         }
+
+        Platform.runLater(() -> {
+           cmbDoctor.getSelectionModel().select(0);
+        });
+
     }
 
     @SuppressWarnings("unchecked")

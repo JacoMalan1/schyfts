@@ -30,4 +30,8 @@ lib
 # Credentials
 service-account.json
 
+# Helper scripts
+run.bat
+update.bat
+
 !gradle/wrapper/gradle-wrapper.jar

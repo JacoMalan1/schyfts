@@ -392,6 +392,9 @@ public class Roster implements Initializable {
         });
 
         dateRange = dialog.showAndWait();
+        if (dateRange.isEmpty())
+            return;
+
         generateSchedule();
     }
 
@@ -399,7 +402,6 @@ public class Roster implements Initializable {
     private JSONObject surgeonLeaveJson;
 
     private void generateSchedule() {
-
         tblSchedule.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         var prgBar = new ProgressBar();
@@ -485,11 +487,13 @@ public class Roster implements Initializable {
             keys.add(key);
             clmCall.setCellValueFactory(new MapValueFactory<>(key));
 
-            List<String> doctorStrings = new ArrayList<>();
-            for (var d : doctors) {
-                doctorStrings.add(d.getName() + " " + d.getSurname());
-            }
-            clmCall.setCellFactory(ChoiceBoxTableCell.forTableColumn(FXCollections.observableArrayList(doctorStrings)));
+            clmCall.setEditable(false);
+
+//            List<String> doctorStrings = new ArrayList<>();
+//            for (var d : doctors) {
+//                doctorStrings.add(d.getName() + " " + d.getSurname());
+//            }
+//            clmCall.setCellFactory(ChoiceBoxTableCell.forTableColumn(FXCollections.observableArrayList(doctorStrings)));
 
             clmCall.setOnEditCommit(event -> {
                 var rowIdx = event.getTablePosition().getRow();
@@ -644,8 +648,8 @@ public class Roster implements Initializable {
                         if (key.startsWith("call") && !addedData.contains(cd)
                             && (dayitems[0].get(key).equals("OFF") || dayitems[0].get(key).equals(""))) {
 
-                            dayitems[0].put(key, cd.getSurname() + " " + cd.getName());
-                            dayitems[1].put(key, cd.getSurname() + " " + cd.getName());
+                            dayitems[0].put(key, cd.getName() + " " + cd.getSurname());
+                            dayitems[1].put(key, cd.getName() + " " + cd.getSurname());
                             addedData.add(cd);
                         }
                     }
@@ -790,17 +794,47 @@ public class Roster implements Initializable {
             }
 
 //            item.put("static", values[values.length - 9]);
-
-            for (var j = values.length - 8; j < values.length - 5; j++)
-                item.put("call" + (j - values.length + 8 + 1), values[j]);
+//
+//            for (var j = values.length - 8; j < values.length - 5; j++)
+//                item.put("call" + (j - values.length + 8 + 1), values[j]);
 
             for (var j = values.length - 5; j < values.length; j++)
                 item.put("loc" + (j - values.length + 5 + 1), values[j]);
             tblSchedule.getItems().add(item);
         }
 
+        callData = CallData.getAllCallData();
+        if (dateRange.isEmpty())
+            return;
+        var baseDate = dateRange.get().getKey().plusWeeks(scheduleOffset);
+        for (var item : tblSchedule.getItems()) {
+            var spaceIdx = ((String)item.get("List")).indexOf(' ');
+            var dayString = ((String)item.get("List")).substring(spaceIdx + 1, spaceIdx + 4);
+            var dayOfWeek = getDOW(dayString);
+            var currentDate = baseDate.plusDays(dayOfWeek);
+            for (var data : callData) {
+                if (data.getDate().equals(currentDate) && data.getStateInt() > 0) {
+                    String doctor = String.format("%s %s", data.getName(), data.getSurname());
+                    item.put("call" + data.getStateInt(), doctor);
+                }
+            }
+        }
+
         tblSchedule.refresh();
         updateScheduleState();
+    }
+
+    private int getDOW(String dayString) {
+        int dayOfWeek = switch (dayString) {
+            case "Tue" -> 1;
+            case "Wed" -> 2;
+            case "Thu" -> 3;
+            case "Fri" -> 4;
+            case "Sat" -> 5;
+            case "Sun" -> 6;
+            default -> 0;
+        };
+        return dayOfWeek;
     }
 
     private void saveSchedule(File file) {

@@ -13,10 +13,10 @@ public class CallData {
     private final int doctorID;
     private final String surname;
     private final String name;
-    private final boolean state;
+    private final int state;
     private final int id;
 
-    public CallData(int doctorID, int id, String surname, String name, LocalDate date, boolean state) {
+    public CallData(int doctorID, int id, String surname, String name, LocalDate date, int state) {
         this.date = date;
         this.id = id;
         this.doctorID = doctorID;
@@ -45,8 +45,10 @@ public class CallData {
         return name;
     }
 
+    public int getStateInt() { return state; }
+
     public String getState() {
-        return state ? "CALL ON" : "CALL OFF";
+        return (state != 0) ? "CALL ON" : "CALL OFF";
     }
 
     public static List<CallData> getAllCallData() {
@@ -63,7 +65,7 @@ public class CallData {
                 var result = results.getJSONObject(i);
                 var dID = result.getInt("dID");
                 var date = LocalDate.parse(result.getString("date").split("T")[0]);
-                var state = (result.getInt("value") != 0);
+                var state = result.getInt("value");
                 var id = result.getInt("id");
 
                 Doctor doctor = null;
