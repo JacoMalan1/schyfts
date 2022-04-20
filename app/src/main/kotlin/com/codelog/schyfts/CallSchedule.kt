@@ -4,6 +4,7 @@ import com.codelog.schyfts.api.APIException
 import com.codelog.schyfts.api.APIRequest
 import com.codelog.schyfts.api.Doctor
 import com.codelog.schyfts.util.AlertFactory
+import com.codelog.schyfts.util.DialogFactory
 import com.codelog.schyfts.util.DoctorStringConverter
 import javafx.beans.InvalidationListener
 import javafx.beans.value.ChangeListener
@@ -12,12 +13,10 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
-import javafx.geometry.Insets
 import javafx.scene.control.*
 import javafx.scene.control.cell.ChoiceBoxTableCell
 import javafx.scene.control.cell.PropertyValueFactory
 import javafx.scene.input.KeyCode
-import javafx.scene.layout.GridPane
 import javafx.stage.Stage
 import javafx.util.Callback
 import org.json.JSONArray
@@ -165,26 +164,7 @@ class CallSchedule: Initializable {
     }
 
     fun mnuSaveClick() {
-        val dialog: Dialog<LocalDate?> = Dialog()
-        dialog.title = "Select a date"
-        dialog.headerText = "Please select a date on which this week starts."
-        dialog.dialogPane.buttonTypes.addAll(ButtonType.OK, ButtonType.CANCEL)
-
-        val pane = GridPane()
-        pane.hgap = 10.0
-        pane.vgap = 10.0
-        pane.padding = Insets(20.0, 150.0, 10.0, 10.0)
-
-        val dp = DatePicker()
-        pane.add(Label("Week start date:"), 0, 0)
-        pane.add(dp, 1, 0)
-
-        dialog.dialogPane.content = pane
-        dialog.setResultConverter {
-            if (it.buttonData.isCancelButton)
-                return@setResultConverter null
-            return@setResultConverter dp.value
-        }
+        val dialog = DialogFactory.makeDatePickerDialog("Please select a date on which this week starts.");
 
         val result = dialog.showAndWait()
         if (result.isEmpty)
@@ -220,26 +200,30 @@ class CallSchedule: Initializable {
         }
     }
 
+    private fun savePrompt(): Boolean? {
+        val dialog = Dialog<Boolean?>()
+        dialog.title = "Save to database?"
+        dialog.headerText = "The schedule has not been saved yet. Would you like to save it now?"
+        dialog.dialogPane.buttonTypes.addAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL)
+
+        dialog.setResultConverter {
+            when (it) {
+                ButtonType.CANCEL -> null
+                ButtonType.YES -> true
+                ButtonType.NO -> false
+                else -> null
+            }
+        }
+
+        val result = dialog.showAndWait()
+
+        return result.get()
+    }
+
     fun mnuClearClick() {
         if (!isSaved) {
-            val dialog = Dialog<Boolean?>()
-            dialog.title = "Save to database?"
-            dialog.headerText = "The schedule has not been saved yet. Would you like to save it now?"
-            dialog.dialogPane.buttonTypes.addAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL)
-
-            dialog.setResultConverter {
-                when (it) {
-                    ButtonType.CANCEL -> null
-                    ButtonType.YES -> true
-                    ButtonType.NO -> false
-                    else -> null
-                }
-            }
-
-            val result = dialog.showAndWait()
-            if (result.isEmpty)
-                return
-            if (result.get())
+            val saveResponse = savePrompt() ?: return
+            if (saveResponse)
                 mnuSaveClick()
         }
 
@@ -258,5 +242,58 @@ class CallSchedule: Initializable {
         tblCalls.items.addAll(entries)
         tblCalls.refresh()
         isSaved = false
+    }
+
+    fun mnuLoadClick() {
+        if (!isSaved) {
+            val saveResponse = savePrompt() ?: return
+            if (saveResponse)
+                mnuSaveClick()
+        }
+
+        val dialog = DialogFactory.makeDatePickerDialog("Please select the Monday of the week you want to load.")
+        val result = dialog.showAndWait()
+
+        if (result.isEmpty)
+            return
+
+        if (result.get().dayOfWeek != DayOfWeek.MONDAY) {
+            AlertFactory.showAlert(Alert.AlertType.WARNING, "That date is not a Monday!");
+            return;
+        }
+
+        val baseDate = result.get();
+        val startDate = baseDate.toString().split("T")[0]
+        val endDate = baseDate.plusDays(7).toString().split("T")[0]
+
+        val req = APIRequest("getCallData", true, "start", "end")
+        try {
+            val jsonArray = req.send(startDate, endDate).getJSONArray("results")
+            tblCalls.items.clear();
+
+            val entries = ArrayList<CallEntry>(jsonArray.length() / 3 + 1)
+
+            for (dow in DayOfWeek.values()) {
+                val calls = Array(3) { Doctor(0, "", "", "", "") }
+                for (i in 0 until jsonArray.length()) {
+                    val json = jsonArray.getJSONObject(i)
+                    val date = LocalDate.parse(json.getString("date").split("T")[0])
+                    if (date.dayOfWeek == dow) {
+                        val dID = json.getInt("dID")
+                        val value = json.getInt("value")
+                        val doctor = doctors.find { it.id == dID } ?: Doctor(0, "", "", "", "")
+                        calls[value - 1] = doctor;
+                    }
+                }
+                entries.add(CallEntry(calls, dow))
+            }
+
+            entries.sortWith(Comparator { o1, o2 -> return@Comparator o1.dow.ordinal - o2.dow.ordinal })
+            tblCalls.items.addAll(entries);
+            tblCalls.refresh()
+        } catch (e: APIException) {
+            Logger.error("Couldn't fetch Call Data!");
+            Logger.exception(e);
+        }
     }
 }

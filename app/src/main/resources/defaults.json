@@ -8,5 +8,6 @@
       "Error"
     ]
   },
-  "testing": false
+  "testing": false,
+  "browserPath": "/usr/bin/chromium"
 }

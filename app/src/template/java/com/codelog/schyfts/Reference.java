@@ -19,5 +19,6 @@ public class Reference {
     );
 
     public static final String VERSION_STRING = "${version}";
-
+    public static final String DEFAULT_BROWSER_PATH = "/usr/bin/chromium";
+    public static final String BROWSER_PATH_CONFIG_KEY = "/usr/bin/chromium";
 }

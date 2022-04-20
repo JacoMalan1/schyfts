@@ -3,10 +3,7 @@ package com.codelog.schyfts;
 import com.codelog.clogg.Logger;
 import com.codelog.schyfts.api.*;
 import com.codelog.schyfts.google.StorageContext;
-import com.codelog.schyfts.util.AlertFactory;
-import com.codelog.schyfts.util.FileUtils;
-import com.codelog.schyfts.util.LocalDateFormatter;
-import com.codelog.schyfts.util.RandomUtil;
+import com.codelog.schyfts.util.*;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import javafx.collections.FXCollections;
@@ -366,30 +363,7 @@ public class Roster implements Initializable {
 
     public void mnuGenerateScheduleClick(ActionEvent actionEvent) {
         tblSchedule.getStylesheets().add("styles.css");
-        Dialog<Pair<LocalDate, LocalDate>> dialog = new Dialog<>();
-        dialog.setTitle("Schedule options");
-        dialog.setHeaderText("Please select a start and end date");
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        GridPane pane = new GridPane();
-        pane.setHgap(10);
-        pane.setVgap(10);
-        pane.setPadding(new Insets(20, 150, 10, 10));
-
-        DatePicker dpStartDate = new DatePicker();
-        DatePicker dpEndDate = new DatePicker();
-
-        pane.add(new Label("Start Date:"), 0, 0);
-        pane.add(dpStartDate, 1, 0);
-        pane.add(new Label("End Date:"), 0, 1);
-        pane.add(dpEndDate, 1, 1);
-
-        dialog.getDialogPane().setContent(pane);
-        dialog.setResultConverter(dialogButton -> {
-            if (!dialogButton.getButtonData().isCancelButton()) {
-                return new Pair<>(dpStartDate.getValue(), dpEndDate.getValue());
-            }
-            return null;
-        });
+        var dialog = DialogFactory.makeDateRangeDialog();
 
         dateRange = dialog.showAndWait();
         if (dateRange.isEmpty())
@@ -825,7 +799,7 @@ public class Roster implements Initializable {
     }
 
     private int getDOW(String dayString) {
-        int dayOfWeek = switch (dayString) {
+        return switch (dayString) {
             case "Tue" -> 1;
             case "Wed" -> 2;
             case "Thu" -> 3;
@@ -834,7 +808,6 @@ public class Roster implements Initializable {
             case "Sun" -> 6;
             default -> 0;
         };
-        return dayOfWeek;
     }
 
     private void saveSchedule(File file) {
@@ -951,56 +924,37 @@ public class Roster implements Initializable {
             ));
 
             Logger.getInstance().debug(uri.toASCIIString());
-            if (Desktop.isDesktopSupported() && !System.getProperty("os.name").equals("Linux")) {
-                Desktop.getDesktop().browse(uri);
-            } else {
-                Runtime rt = Runtime.getRuntime();
-                rt.exec("xdg-open " + uri);
-            }
+            WebUtils.browseURI(uri);
         } catch (IOException | URISyntaxException | NullPointerException e) {
             Logger.getInstance().exception(e);
             AlertFactory.showAlert(Alert.AlertType.ERROR, e.getMessage());
         }
     }
 
+
+
     public void mnuLoadClick(ActionEvent actionEvent) {
         loadSchedule();
     }
 
-    private int max(Set<Integer> nums) {
-        int result = (int)nums.toArray()[0];
-
-        for (var num : nums) {
-            if (num > result) {
-                result = num;
-            }
-        }
-
-        return result;
-    }
-
     public void mnuCalculateStatistics_Click(ActionEvent actionEvent) {
+        String startDate = Reference.GENESIS_TIME.toString().split("T")[0];
+        String endDate = LocalDate.now().toString().split("T")[0];
 
-        Map<Integer, ArrayList<HashMap<String, String>>> items = new HashMap<>();
-        for (int i = 0; i < maxWeeks; i++) {
-            ArrayList<HashMap<String, String>> list = new ArrayList<>();
-            for (var map : tblSchedule.getItems()) {
-                HashMap<String, String> newMap = new HashMap<>();
-                for (var key : map.keySet())
-                    newMap.put((String)key, (String)map.get(key));
-                list.add(newMap);
-            }
-            items.put(i, list);
-            advanceSchedule();
+        String builder = Reference.API_URL +
+                "statistics/" +
+                UserContext.getInstance().getCurrentUser().getToken() +
+                '/' + startDate + '/' + endDate;
+
+        try {
+            WebUtils.browseURI(new URI(builder));
+        } catch (URISyntaxException e) {
+            Logger.getInstance().error("We somehow malformed the URI. What happened?");
+            Logger.getInstance().exception(e);
+            AlertFactory.showAlert(
+                    Alert.AlertType.ERROR,
+                    "A URISyntaxException has occurred. Please contact the developer for help."
+            );
         }
-
-        for (int i = 0; i < maxWeeks; i++)
-            advanceSchedule(true);
-
-        Statistics stats = new Statistics(items, doctors);
-        var statsList = stats.calculateStatistics("call");
-        StatisticsViewer.Companion.setStatistics(statsList);
-        Schyfts.createStage("FXML/statistics.fxml", "Statistics Viewer", true, true);
-
     }
 }
