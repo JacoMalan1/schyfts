@@ -34,4 +34,6 @@ service-account.json
 run.bat
 update.bat
 
+gradle.properties
+
 !gradle/wrapper/gradle-wrapper.jar
