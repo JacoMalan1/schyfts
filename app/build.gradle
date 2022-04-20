@@ -19,8 +19,8 @@ repositories {
     maven {
         url = uri("https://maven.pkg.github.com/Code-Log/clogg-java")
         credentials {
-            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
-            password = project.findProperty("gpr.token") ?: System.getenv("TOKEN")
+            username = "code-log"
+            password = "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"
         }
     }
 }
