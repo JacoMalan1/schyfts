@@ -11,14 +11,9 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
@@ -32,7 +27,6 @@ import javafx.util.Pair;
 import javafx.util.converter.DefaultStringConverter;
 import org.json.JSONObject;
 
-import java.awt.*;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -45,7 +39,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.*;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -939,12 +932,17 @@ public class Roster implements Initializable {
 
     public void mnuCalculateStatistics_Click(ActionEvent actionEvent) {
         String startDate = Reference.GENESIS_TIME.toString().split("T")[0];
-        String endDate = LocalDate.now().toString().split("T")[0];
+
+        var dialog = DialogFactory.makeDatePickerDialog("Please enter an end date to calculate the statistics", "End date:");
+        var endDate = dialog.showAndWait();
+
+        if (endDate.isEmpty())
+            return;
 
         String builder = Reference.API_URL +
                 "statistics/" +
                 UserContext.getInstance().getCurrentUser().getToken() +
-                '/' + startDate + '/' + endDate;
+                '/' + startDate + '/' + endDate.get();
 
         try {
             WebUtils.browseURI(new URI(builder));

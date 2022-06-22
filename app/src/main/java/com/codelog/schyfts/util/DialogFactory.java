@@ -41,7 +41,7 @@ public class DialogFactory {
     }
 
     @NotNull
-    public static Dialog<LocalDate> makeDatePickerDialog(String prompt) {
+    public static Dialog<LocalDate> makeDatePickerDialog(String prompt, String dateLabel) {
         Dialog<LocalDate> dialog = new Dialog<>();
         dialog.setTitle("Select a date");
         dialog.setHeaderText(prompt);
@@ -53,7 +53,7 @@ public class DialogFactory {
         pane.setPadding(new Insets(20.0, 150.0, 10.0, 10.0));
 
         var dp = new DatePicker();
-        pane.add(new Label("Week start date:"), 0, 0);
+        pane.add(new Label(dateLabel), 0, 0);
         pane.add(dp, 1, 0);
 
         dialog.getDialogPane().setContent(pane);
@@ -64,5 +64,9 @@ public class DialogFactory {
         });
 
         return dialog;
+    }
+
+    public static Dialog<LocalDate> makeDatePickerDialog(String prompt) {
+        return makeDatePickerDialog(prompt, "Week start date:");
     }
 }
