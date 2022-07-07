@@ -25,11 +25,12 @@
                    <top>
                        <MenuBar BorderPane.alignment="CENTER">
                            <Menu text="File">
-                               <MenuItem fx:id="mnuSave" mnemonicParsing="false" onAction="#mnuSave" text="Save Roster">
+                               <MenuItem fx:id="mnuSave" mnemonicParsing="false" onAction="#mnuSave" text="Save matrix">
                                    <accelerator>
                                        <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                                    </accelerator>
                                </MenuItem>
+                        <MenuItem mnemonicParsing="false" onAction="#mnuPrintMatrixClick" text="Print matrix" />
                            </Menu>
                            <Menu mnemonicParsing="false" text="Generate">
                                <MenuItem fx:id="mnuGenerateSchedule" mnemonicParsing="false" onAction="#mnuGenerateScheduleClick" text="Schedule" />

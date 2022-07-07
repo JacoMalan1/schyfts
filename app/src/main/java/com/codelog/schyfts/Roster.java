@@ -955,4 +955,17 @@ public class Roster implements Initializable {
             );
         }
     }
+
+    public void mnuPrintMatrixClick(ActionEvent actionEvent) {
+        try {
+            var uri = new URI(
+                    String.format("%smatrix/%s", Reference.API_URL, UserContext.getInstance().getCurrentUser().getToken())
+            );
+            WebUtils.browseURI(uri);
+        } catch (URISyntaxException e) {
+            AlertFactory.showAlert(Alert.AlertType.ERROR, "An error occurred! Please consult the logs for details.");
+            Logger.getInstance().error("Couldn't create roster URI. Something has gone wrong!");
+            Logger.getInstance().exception(e);
+        }
+    }
 }
