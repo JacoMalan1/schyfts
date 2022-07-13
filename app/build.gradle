@@ -15,14 +15,6 @@ version '1.4.1'
 
 repositories {
     mavenCentral()
-
-    maven {
-        url = uri("https://maven.pkg.github.com/Code-Log/clogg-java")
-        credentials {
-            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
-            password = project.findProperty("gpr.token") ?: System.getenv("TOKEN")
-        }
-    }
 }
 
 javafx {
@@ -36,7 +28,7 @@ dependencies {
     implementation "com.google.cloud:google-cloud-storage:1.113.9"
 
     // CLogg
-    implementation 'com.codelog:clogg:1.0.1'
+    implementation 'io.github.code-log:clogg:1.0.1'
 
     // Kotlin STDLIB
     implementation('org.jetbrains.kotlin:kotlin-bom')
