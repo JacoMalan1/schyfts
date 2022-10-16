@@ -118,7 +118,6 @@ public class Roster implements Initializable {
     }
 
     private void refresh() {
-
         doctorNames = new HashMap<>();
         callData = CallData.getAllCallData();
 
@@ -898,33 +897,45 @@ public class Roster implements Initializable {
         String characterSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         String fileName = RandomUtil.getRandomString(16, characterSet);
 
-        var tmpDir = System.getProperty("java.io.tmpdir");
-        var file = new File(tmpDir + FileSystems.getDefault().getSeparator() + fileName + ".scsv");
-        saveSchedule(file);
+        // Reset schedule to start
+        int maxOffset = scheduleOffset;
+        for (int i = 0; i <= maxOffset; i++)
+            advanceSchedule(true);
 
+        for (int i = 0; i <= maxOffset; i++) {
+            var tmpDir = System.getProperty("java.io.tmpdir");
+            var file = new File(tmpDir + FileSystems.getDefault().getSeparator() + fileName + ".scsv");
+            saveSchedule(file);
+
+            try {
+                var startDate = LocalDateFormatter.format(dateRange.get().getKey());
+                var endDate = LocalDateFormatter.format(dateRange.get().getValue());
+
+                var uploadedFileName = "render_tmp/%s_%s_%s_%d.scsv".formatted(fileName,
+                        startDate.replace('/', '-'), endDate.replace('/', '-'), scheduleOffset);
+                storageBucket.create(uploadedFileName, new FileInputStream(file));
+                Logger.getInstance().info("Uploaded file: %s".formatted(uploadedFileName));
+
+                var weekStart = LocalDateFormatter.format(dateRange.get().getKey().plusWeeks(scheduleOffset));
+
+                var uri = new URI(Reference.API_URL + "printOut/%s".formatted(fileName));
+            } catch (IOException | URISyntaxException | NullPointerException e) {
+                Logger.getInstance().exception(e);
+                AlertFactory.showAlert(Alert.AlertType.ERROR, e.getMessage());
+            }
+            advanceSchedule();
+        }
         try {
-            storageBucket.create("render_tmp/%s".formatted(fileName + ".scsv"), new FileInputStream(file));
-
-            var startDate = LocalDateFormatter.format(dateRange.get().getKey());
-            var endDate = LocalDateFormatter.format(dateRange.get().getValue());
-
-            var weekStart = LocalDateFormatter.format(dateRange.get().getKey().plusWeeks(scheduleOffset));
-
-            var uri = new URI(Reference.API_URL + "printOut/%s/%s/%s".formatted(
-                    fileName,
-                    URLEncoder.encode("%s - %s".formatted(startDate, endDate), StandardCharsets.US_ASCII),
-                    URLEncoder.encode(weekStart, StandardCharsets.US_ASCII)
-            ));
-
+            var uri = new URI(Reference.API_URL + "printOut/%s".formatted(fileName));
             Logger.getInstance().debug(uri.toASCIIString());
             WebUtils.browseURI(uri);
-        } catch (IOException | URISyntaxException | NullPointerException e) {
+        } catch (URISyntaxException e) {
+            AlertFactory.showAlert(Alert.AlertType.ERROR, "Couldn't open schedule website");
+            Logger.getInstance().error("Couldn't open schedule website. Malformed URI!");
             Logger.getInstance().exception(e);
-            AlertFactory.showAlert(Alert.AlertType.ERROR, e.getMessage());
         }
+
     }
-
-
 
     public void mnuLoadClick(ActionEvent actionEvent) {
         loadSchedule();
