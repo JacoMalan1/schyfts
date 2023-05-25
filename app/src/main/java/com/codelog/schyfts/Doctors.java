@@ -4,6 +4,8 @@ import com.codelog.schyfts.api.Doctor;
 import com.codelog.schyfts.api.UserContext;
 import com.codelog.clogg.Logger;
 import com.codelog.schyfts.util.Request;
+
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -103,7 +105,12 @@ public class Doctors implements Initializable {
 
         prgStatus.setProgress(1);
 
-        tblDoctors.getSortOrder().addAll(clmSurname, clmName);
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                tblDoctors.getSortOrder().addAll(clmSurname, clmName);
+            }
+        });
         refreshing.set(false);
     }
 
